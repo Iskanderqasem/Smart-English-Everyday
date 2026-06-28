@@ -206,14 +206,6 @@ class _LoginPageState extends State<LoginPage> {
                               icon: const Icon(Icons.g_mobiledata_rounded, size: 28, color: Colors.red),
                               onPressed: () => context.read<AuthBloc>().add(const AuthGoogleSignInRequested()),
                             ).animate().fadeIn(delay: 550.ms),
-                            if (Platform.isIOS) ...[
-                              const SizedBox(height: 12),
-                              SocialButton(
-                                label: AppStrings.continueWithApple,
-                                icon: const Icon(Icons.apple_rounded, size: 24),
-                                onPressed: () => context.read<AuthBloc>().add(const AuthAppleSignInRequested()),
-                              ).animate().fadeIn(delay: 600.ms),
-                            ],
                             const SizedBox(height: 12),
                             SocialButton(
                               label: AppStrings.continueWithFacebook,
