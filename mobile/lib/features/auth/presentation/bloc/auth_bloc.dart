@@ -132,7 +132,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         achievements: const [], skillScores: const {}, childrenIds: const [],
       );
       await _storageService.saveUserData(user.toJson());
-      emit(AuthNeedsEmailVerification(email: e.email));
+      emit(AuthNeedsAssessment(user: user));
     } catch (_) { emit(const AuthError(message: 'Registration failed.')); }
   }
 
