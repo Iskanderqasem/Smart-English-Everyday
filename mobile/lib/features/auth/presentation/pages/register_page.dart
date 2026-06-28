@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -28,11 +28,11 @@ class _RegisterPageState extends State<RegisterPage> {
   int _currentStep = 0;
 
   final List<Map<String, String>> _englishVariants = [
-    {'code': 'UK', 'name': 'ðŸ‡¬ðŸ‡§ United Kingdom English'},
-    {'code': 'US', 'name': 'ðŸ‡ºðŸ‡¸ United States English'},
-    {'code': 'AU', 'name': 'ðŸ‡¦ðŸ‡º Australian English'},
-    {'code': 'NZ', 'name': 'ðŸ‡³ðŸ‡¿ New Zealand English'},
-    {'code': 'CA', 'name': 'ðŸ‡¨ðŸ‡¦ Canadian English'},
+    {'code': 'UK', 'name': 'United Kingdom English'},
+    {'code': 'US', 'name': 'United States English'},
+    {'code': 'AU', 'name': 'Australian English'},
+    {'code': 'NZ', 'name': 'New Zealand English'},
+    {'code': 'CA', 'name': 'Canadian English'},
   ];
 
   @override
@@ -129,14 +129,14 @@ class _RegisterPageState extends State<RegisterPage> {
           CustomTextField(
             controller: _firstNameCtrl,
             label: 'First Name',
-            prefixIcon: Icons.person_outline,
+            prefixIcon: const Icon(Icons.person_outline),
             validator: (v) => v == null || v.isEmpty ? 'Required' : null,
           ),
           const SizedBox(height: 16),
           CustomTextField(
             controller: _lastNameCtrl,
             label: 'Last Name',
-            prefixIcon: Icons.person_outline,
+            prefixIcon: const Icon(Icons.person_outline),
             validator: (v) => v == null || v.isEmpty ? 'Required' : null,
           ),
         ],
@@ -152,30 +152,30 @@ class _RegisterPageState extends State<RegisterPage> {
           CustomTextField(
             controller: _usernameCtrl,
             label: 'Username',
-            prefixIcon: Icons.alternate_email,
-            validator: Validators.username,
+            prefixIcon: const Icon(Icons.alternate_email),
+            validator: AppValidators.username,
           ),
           const SizedBox(height: 16),
           CustomTextField(
             controller: _emailCtrl,
             label: 'Email Address',
-            prefixIcon: Icons.email_outlined,
+            prefixIcon: const Icon(Icons.email_outlined),
             keyboardType: TextInputType.emailAddress,
-            validator: Validators.email,
+            validator: AppValidators.email,
           ),
           const SizedBox(height: 16),
           CustomTextField(
             controller: _passwordCtrl,
             label: 'Password',
-            prefixIcon: Icons.lock_outline,
+            prefixIcon: const Icon(Icons.lock_outline),
             isPassword: true,
-            validator: Validators.password,
+            validator: AppValidators.password,
           ),
           const SizedBox(height: 16),
           CustomTextField(
             controller: _confirmPasswordCtrl,
             label: 'Confirm Password',
-            prefixIcon: Icons.lock_outline,
+            prefixIcon: const Icon(Icons.lock_outline),
             isPassword: true,
             validator: (v) => v != _passwordCtrl.text ? 'Passwords do not match' : null,
           ),
@@ -274,4 +274,3 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 }
-
