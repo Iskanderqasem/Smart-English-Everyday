@@ -1,132 +1,105 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+
+class MockUser {
+  final String uid;
+  final String? email;
+  final String? displayName;
+  final String? photoURL;
+  final bool emailVerified;
+
+  const MockUser({
+    required this.uid,
+    this.email,
+    this.displayName,
+    this.photoURL,
+    this.emailVerified = false,
+  });
+}
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  MockUser? _currentUser;
 
-  User? get currentUser => _auth.currentUser;
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
-  bool get isLoggedIn => _auth.currentUser != null;
+  MockUser? get currentUser => _currentUser;
+  bool get isLoggedIn => _currentUser != null;
+  bool get isEmailVerified => _currentUser?.emailVerified ?? false;
 
-  Future<UserCredential> signInWithEmail({
+  Future<MockUser> signInWithEmail({
     required String email,
     required String password,
   }) async {
-    return _auth.signInWithEmailAndPassword(
-      email: email.trim(),
-      password: password,
+    await Future.delayed(const Duration(milliseconds: 800));
+    _currentUser = MockUser(
+      uid: 'user_${email.hashCode.abs()}',
+      email: email,
+      displayName: email.split('@').first,
+      emailVerified: true,
     );
+    return _currentUser!;
   }
 
-  Future<UserCredential> registerWithEmail({
+  Future<MockUser> registerWithEmail({
     required String email,
     required String password,
     required String fullName,
   }) async {
-    final credential = await _auth.createUserWithEmailAndPassword(
-      email: email.trim(),
-      password: password,
+    await Future.delayed(const Duration(milliseconds: 1000));
+    _currentUser = MockUser(
+      uid: 'user_${email.hashCode.abs()}',
+      email: email,
+      displayName: fullName,
+      emailVerified: false,
     );
-    await credential.user?.updateDisplayName(fullName);
-    await credential.user?.sendEmailVerification();
-    return credential;
+    return _currentUser!;
   }
 
-  Future<UserCredential?> signInWithGoogle() async {
-    final googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) return null;
-
-    final googleAuth = await googleUser.authentication;
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
+  Future<MockUser?> signInWithGoogle() async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    _currentUser = const MockUser(
+      uid: 'google_demo_001',
+      email: 'demo@gmail.com',
+      displayName: 'Demo User',
+      emailVerified: true,
     );
-    return _auth.signInWithCredential(credential);
+    return _currentUser;
   }
 
-  Future<UserCredential?> signInWithApple() async {
-    try {
-      final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-      final oauthCredential = OAuthProvider('apple.com').credential(
-        idToken: appleCredential.identityToken,
-        accessToken: appleCredential.authorizationCode,
-      );
-      return _auth.signInWithCredential(oauthCredential);
-    } catch (e) {
-      debugPrint('Apple sign in error: $e');
-      return null;
-    }
+  Future<MockUser?> signInWithApple() async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    _currentUser = const MockUser(
+      uid: 'apple_demo_001',
+      email: 'demo@icloud.com',
+      displayName: 'Demo User',
+      emailVerified: true,
+    );
+    return _currentUser;
   }
 
-  Future<UserCredential?> signInWithFacebook() async {
-    try {
-      final loginResult = await FacebookAuth.instance.login();
-      if (loginResult.status != LoginStatus.success) return null;
-
-      final accessToken = loginResult.accessToken;
-      if (accessToken == null) return null;
-
-      final credential = FacebookAuthProvider.credential(accessToken.tokenString);
-      return _auth.signInWithCredential(credential);
-    } catch (e) {
-      debugPrint('Facebook sign in error: $e');
-      return null;
-    }
+  Future<MockUser?> signInWithFacebook() async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    _currentUser = const MockUser(
+      uid: 'fb_demo_001',
+      email: 'demo@facebook.com',
+      displayName: 'Demo User',
+      emailVerified: true,
+    );
+    return _currentUser;
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
-    await _auth.sendPasswordResetEmail(email: email.trim());
+    await Future.delayed(const Duration(milliseconds: 500));
+    debugPrint('Password reset email sent to $email');
   }
 
   Future<void> sendEmailVerification() async {
-    await _auth.currentUser?.sendEmailVerification();
-  }
-
-  Future<void> reloadUser() async {
-    await _auth.currentUser?.reload();
-  }
-
-  bool get isEmailVerified => _auth.currentUser?.emailVerified ?? false;
-
-  Future<String?> getIdToken({bool forceRefresh = false}) async {
-    return _auth.currentUser?.getIdToken(forceRefresh);
+    await Future.delayed(const Duration(milliseconds: 300));
+    debugPrint('Verification email sent');
   }
 
   Future<void> signOut() async {
-    await Future.wait([
-      _auth.signOut(),
-      _googleSignIn.signOut(),
-    ]);
-    try {
-      await FacebookAuth.instance.logOut();
-    } catch (_) {}
-  }
-
-  Future<void> deleteAccount() async {
-    await _auth.currentUser?.delete();
+    _currentUser = null;
   }
 
   Future<void> updatePassword(String newPassword) async {
-    await _auth.currentUser?.updatePassword(newPassword);
-  }
-
-  Future<void> reauthenticate({
-    required String email,
-    required String password,
-  }) async {
-    final credential = EmailAuthProvider.credential(
-      email: email,
-      password: password,
-    );
-    await _auth.currentUser?.reauthenticateWithCredential(credential);
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:get_it/get_it.dart';
 
@@ -17,10 +16,7 @@ final GetIt sl = GetIt.instance;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp();
   await Hive.initFlutter();
-
   await _setupDependencies();
 
   SystemChrome.setPreferredOrientations([
@@ -39,27 +35,16 @@ void main() async {
 }
 
 Future<void> _setupDependencies() async {
-  sl.registerSingleton<StorageService>(StorageService());
-  await sl<StorageService>().init();
+  final storageService = StorageService();
+  await storageService.initialize();
+  sl.registerSingleton<StorageService>(storageService);
 
   sl.registerSingleton<ApiClient>(ApiClient());
   sl.registerSingleton<AuthService>(AuthService());
-  sl.registerSingleton<NotificationService>(NotificationService());
-  await sl<NotificationService>().init();
-}
 
-class AppBlocObserver extends BlocObserver {
-  @override
-  void onChange(BlocBase bloc, Change change) {
-    super.onChange(bloc, change);
-    debugPrint('${bloc.runtimeType} $change');
-  }
-
-  @override
-  void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
-    debugPrint('${bloc.runtimeType} $error $stackTrace');
-    super.onError(bloc, error, stackTrace);
-  }
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+  sl.registerSingleton<NotificationService>(notificationService);
 }
 
 class SmartEnglishApp extends StatelessWidget {
@@ -69,19 +54,20 @@ class SmartEnglishApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => AuthBloc(sl<AuthService>())..add(AuthCheckStatusEvent())),
+        BlocProvider(
+          create: (_) => AuthBloc(
+            authService: sl<AuthService>(),
+            storageService: sl<StorageService>(),
+          )..add(const AuthCheckRequested()),
+        ),
       ],
-      child: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, state) {
-          return MaterialApp.router(
-            title: 'Smart English Everyday',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.system,
-            routerConfig: AppRouter.router,
-          );
-        },
+      child: MaterialApp.router(
+        title: 'Smart English Everyday',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        routerConfig: AppRouter.router,
       ),
     );
   }

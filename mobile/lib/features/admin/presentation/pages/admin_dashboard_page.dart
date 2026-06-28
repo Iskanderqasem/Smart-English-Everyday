@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -105,7 +105,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               _StatCard2('Avg CEFR Score', 'B1.2', 'Platform average', Icons.school, Colors.purple),
             ],
           ),
-          const SizedBox(height(24)),
+          const SizedBox(height: 24),
           const Text('User Growth (Last 30 Days)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           Container(
@@ -146,7 +146,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               const SizedBox(width: 10),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(['Sarah Mitchell','Ahmed Khalil','Maria Lopez','John Davis','Lisa Chen'][i], style: const TextStyle(fontWeight: FontWeight.w600)),
-                Text(['🇬🇧 C1','🇦🇪 B2','🇧🇷 B1','🇺🇸 C1','🇨🇳 B2'][i], style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(['ðŸ‡¬ðŸ‡§ C1','ðŸ‡¦ðŸ‡ª B2','ðŸ‡§ðŸ‡· B1','ðŸ‡ºðŸ‡¸ C1','ðŸ‡¨ðŸ‡³ B2'][i], style: const TextStyle(color: Colors.grey, fontSize: 12)),
               ])),
               Text(['4,820 XP','4,215 XP','3,890 XP','3,650 XP','3,420 XP'][i], style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
             ]),
@@ -179,7 +179,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               child: ListTile(
                 leading: CircleAvatar(backgroundColor: AppColors.primary.withOpacity(0.1), child: Text('U', style: const TextStyle(color: AppColors.primary))),
                 title: Text('Student ${i+1}'),
-                subtitle: Text('student${i+1}@email.com • Joined ${30-i} days ago'),
+                subtitle: Text('student${i+1}@email.com â€¢ Joined ${30-i} days ago'),
                 trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                   Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(8)),
                     child: Text(['A2','B1','B1','B2','A1'][i%5], style: TextStyle(color: Colors.green[700], fontSize: 12, fontWeight: FontWeight.bold))),
@@ -291,3 +291,4 @@ class _StatCard2 extends StatelessWidget {
     );
   }
 }
+
