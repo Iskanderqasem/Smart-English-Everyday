@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Smart English Everyday — AI-powered English Learning Platform">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Smart English Everyday">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Icons -->
+  <link rel="icon" type="image/png" href="icons/Icon-192.png"/>
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Theme color -->
+  <meta name="theme-color" content="#1565C0">
+  <meta name="msapplication-navbutton-color" content="#1565C0">
+
+  <title>Smart English Everyday</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: linear-gradient(135deg, #1565C0, #7B1FA2); height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; }
+    #loading { text-align: center; color: white; }
+    #loading-logo { font-size: 64px; margin-bottom: 16px; animation: pulse 1.5s ease-in-out infinite; }
+    #loading-title { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+    #loading-sub { font-size: 14px; opacity: 0.8; margin-bottom: 32px; }
+    #loading-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; overflow: hidden; margin: 0 auto; }
+    #loading-bar-fill { height: 100%; background: white; border-radius: 2px; animation: loading 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+    @keyframes loading { 0%{width:0;margin-left:0} 50%{width:100%;margin-left:0} 100%{width:0;margin-left:100%} }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div id="loading-logo">🌍</div>
+    <div id="loading-title">Smart English Everyday</div>
+    <div id="loading-sub">AI-Powered English Learning</div>
+    <div id="loading-bar"><div id="loading-bar-fill"></div></div>
+  </div>
+
+  <script>
+    window.addEventListener('load', function(ev) {
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: { serviceWorkerVersion: serviceWorkerVersion },
+        onEntrypointLoaded: async function(engineInitializer) {
+          let appRunner = await engineInitializer.initializeEngine();
+          document.getElementById('loading').style.display = 'none';
+          await appRunner.runApp();
+        }
+      });
+    });
+  </script>
+  <script src="flutter.js" defer></script>
+</body>
+</html>
