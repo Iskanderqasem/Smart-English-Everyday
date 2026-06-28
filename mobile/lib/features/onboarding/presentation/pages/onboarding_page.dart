@@ -6,6 +6,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/services/storage_service.dart';
 import '../../../../shared/widgets/custom_button.dart';
+import '../../../../main.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -61,7 +62,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Future<void> _completeOnboarding() async {
-    final storage = StorageService();
+    final storage = sl<StorageService>();
     await storage.setOnboardingComplete();
     if (mounted) context.go(AppRouter.login);
   }
