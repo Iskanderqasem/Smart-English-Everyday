@@ -88,7 +88,17 @@ jobs:
 
       - name: Build Debug APK
         working-directory: mobile
-        run: flutter build apk --debug
+        run: |
+          set +e
+          OUTPUT=$(flutter build apk --debug 2>&1)
+          EXIT_CODE=$?
+          echo "$OUTPUT"
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "$OUTPUT" | grep -E "error:|Error:|\.dart:|exception" | head -40 | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+          fi
+          exit $EXIT_CODE
 
       - name: Upload APK to GitHub Release
         uses: softprops/action-gh-release@v2
