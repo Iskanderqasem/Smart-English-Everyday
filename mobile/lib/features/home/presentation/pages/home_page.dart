@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -27,7 +27,8 @@ class _HomePageState extends State<HomePage> {
 
   void _loadUser() {
     final storage = sl<StorageService>();
-    setState(() => _user = storage.getUser());
+    final data = storage.getUserData();
+    if (data != null) setState(() => _user = UserModel.fromJson(data));
   }
 
   @override
@@ -71,7 +72,7 @@ class _HomeTab extends StatelessWidget {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Good morning! 👋', style: TextStyle(fontSize: 13, color: Colors.white70)),
+              Text('Good morning! ðŸ‘‹', style: TextStyle(fontSize: 13, color: Colors.white70)),
               Text('Keep learning!', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -118,7 +119,7 @@ class _HomeTab extends StatelessWidget {
       children: [
         Expanded(
           child: _StatCard(
-            icon: '🔥',
+            icon: 'ðŸ”¥',
             value: '7',
             label: 'Day Streak',
             color: Colors.orange,
@@ -127,7 +128,7 @@ class _HomeTab extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _StatCard(
-            icon: '⭐',
+            icon: 'â­',
             value: '1,240',
             label: 'XP Points',
             color: Colors.amber,
@@ -136,7 +137,7 @@ class _HomeTab extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _StatCard(
-            icon: '🏆',
+            icon: 'ðŸ†',
             value: 'B1',
             label: 'CEFR Level',
             color: AppColors.primary,
@@ -169,9 +170,9 @@ class _HomeTab extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text('Perseverance', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-          const Text('/pəˌsɪvɪərəns/', style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const Text('/pÉ™ËŒsÉªvÉªÉ™rÉ™ns/', style: TextStyle(color: Colors.white70, fontSize: 14)),
           const SizedBox(height: 8),
-          const Text('noun — Continued effort despite difficulty', style: TextStyle(color: Colors.white, fontSize: 14)),
+          const Text('noun â€” Continued effort despite difficulty', style: TextStyle(color: Colors.white, fontSize: 14)),
           const SizedBox(height: 8),
           const Text('"Her perseverance finally paid off."', style: TextStyle(color: Colors.white70, fontStyle: FontStyle.italic)),
           const SizedBox(height: 12),
@@ -181,7 +182,7 @@ class _HomeTab extends StatelessWidget {
               const Spacer(),
               TextButton(
                 onPressed: () => context.push('/daily-words'),
-                child: const Text('See all words →', style: TextStyle(color: Colors.white)),
+                child: const Text('See all words â†’', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -198,7 +199,7 @@ class _HomeTab extends StatelessWidget {
         const SizedBox(height: 12),
         _LessonCard(
           title: 'Present Perfect Tense',
-          subtitle: 'Level 5 • Grammar',
+          subtitle: 'Level 5 â€¢ Grammar',
           progress: 0.6,
           icon: Icons.menu_book,
           color: Colors.blue,
@@ -207,7 +208,7 @@ class _HomeTab extends StatelessWidget {
         const SizedBox(height: 8),
         _LessonCard(
           title: 'Business Vocabulary',
-          subtitle: 'Level 8 • Vocabulary',
+          subtitle: 'Level 8 â€¢ Vocabulary',
           progress: 0.3,
           icon: Icons.work_outline,
           color: Colors.purple,
@@ -404,7 +405,7 @@ class _LearnTab extends StatelessWidget {
         itemCount: 10,
         itemBuilder: (context, i) {
           final levels = ['Alphabet & Phonics','Simple Sentences','Beginner Conversation','Elementary','Intermediate','Upper Intermediate','Advanced','Business English','Academic English','IELTS / TOEFL Prep'];
-          final icons = ['🔤','💬','🗣️','📖','📚','🎓','🏆','💼','🎯','📋'];
+          final icons = ['ðŸ”¤','ðŸ’¬','ðŸ—£ï¸','ðŸ“–','ðŸ“š','ðŸŽ“','ðŸ†','ðŸ’¼','ðŸŽ¯','ðŸ“‹'];
           final colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.teal, Colors.red, Colors.indigo, Colors.brown, Colors.cyan, Colors.amber];
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
@@ -477,15 +478,15 @@ class _ProgressTab extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _ProgressCard('CEFR Level', 'B1 — Intermediate', Icons.star, Colors.amber),
+            _ProgressCard('CEFR Level', 'B1 â€” Intermediate', Icons.star, Colors.amber),
             const SizedBox(height: 12),
-            _ProgressCard('IELTS Estimate', '5.5 — Upper Intermediate', Icons.school, Colors.blue),
+            _ProgressCard('IELTS Estimate', '5.5 â€” Upper Intermediate', Icons.school, Colors.blue),
             const SizedBox(height: 12),
             _ProgressCard('Words Learned', '847 vocabulary words', Icons.text_fields, Colors.green),
             const SizedBox(height: 12),
             _ProgressCard('Hours Studied', '42 hours total', Icons.timer, Colors.purple),
             const SizedBox(height: 12),
-            _ProgressCard('Current Streak', '7 days 🔥', Icons.local_fire_department, Colors.orange),
+            _ProgressCard('Current Streak', '7 days ðŸ”¥', Icons.local_fire_department, Colors.orange),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => context.push('/progress'),
@@ -549,7 +550,7 @@ class _ProfileTab extends StatelessWidget {
                 const Text('student@email.com', style: TextStyle(color: Colors.white70)),
                 const SizedBox(height: 8),
                 Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
-                  child: const Text('B1 — Intermediate 🏆', style: TextStyle(color: Colors.white))),
+                  child: const Text('B1 â€” Intermediate ðŸ†', style: TextStyle(color: Colors.white))),
               ]),
             ),
             const SizedBox(height: 8),
@@ -584,3 +585,4 @@ class _ProfileTile extends StatelessWidget {
     );
   }
 }
+

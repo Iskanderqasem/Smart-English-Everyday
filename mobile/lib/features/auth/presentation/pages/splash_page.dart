@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/services/storage_service.dart';
+import '../../../../main.dart';
 import '../bloc/auth_bloc.dart';
 
 class SplashPage extends StatefulWidget {
@@ -34,7 +35,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
         if (state is AuthAuthenticated) {
           context.go(AppRouter.home);
         } else if (state is AuthUnauthenticated) {
-          final storage = context.read<StorageService>();
+          final storage = sl<StorageService>();
           if (storage.isOnboardingComplete) {
             context.go(AppRouter.login);
           } else {
@@ -165,3 +166,4 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     );
   }
 }
+
