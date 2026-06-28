@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -34,6 +34,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: IndexedStack(
         index: _selectedIndex,
         children: const [
@@ -45,6 +46,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
         selectedIndex: _selectedIndex,
         onDestinationSelected: (i) => setState(() => _selectedIndex = i),
         destinations: const [
@@ -59,6 +61,8 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// ─── HOME TAB ───────────────────────────────────────────────────────────────
+
 class _HomeTab extends StatelessWidget {
   const _HomeTab();
 
@@ -69,26 +73,35 @@ class _HomeTab extends StatelessWidget {
         SliverAppBar(
           floating: true,
           backgroundColor: AppColors.primary,
-          title: Column(
+          expandedHeight: 60,
+          title: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Good morning! ðŸ‘‹', style: TextStyle(fontSize: 13, color: Colors.white70)),
+              Text('Good morning!', style: TextStyle(fontSize: 13, color: Colors.white70)),
               Text('Keep learning!', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
             ],
           ),
           actions: [
             Stack(
               children: [
-                IconButton(icon: const Icon(Icons.notifications_outlined, color: Colors.white), onPressed: () => context.push('/notifications')),
-                Positioned(right: 8, top: 8, child: Container(width: 8, height: 8, decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle))),
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                  onPressed: () {},
+                ),
+                Positioned(
+                  right: 8, top: 8,
+                  child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: CircleAvatar(backgroundColor: Colors.white24, child: Text('S', style: TextStyle(color: Colors.white))),
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: CircleAvatar(
+                backgroundColor: Colors.white24,
+                child: Text('S', style: TextStyle(color: Colors.white)),
+              ),
             ),
           ],
-          expandedHeight: 60,
         ),
         SliverToBoxAdapter(
           child: Padding(
@@ -117,41 +130,20 @@ class _HomeTab extends StatelessWidget {
   Widget _buildStreakAndXP() {
     return Row(
       children: [
-        Expanded(
-          child: _StatCard(
-            icon: 'ðŸ”¥',
-            value: '7',
-            label: 'Day Streak',
-            color: Colors.orange,
-          ),
-        ),
+        Expanded(child: _StatCard(icon: Icons.local_fire_department, value: '7', label: 'Day Streak', color: Colors.orange)),
         const SizedBox(width: 12),
-        Expanded(
-          child: _StatCard(
-            icon: 'â­',
-            value: '1,240',
-            label: 'XP Points',
-            color: Colors.amber,
-          ),
-        ),
+        Expanded(child: _StatCard(icon: Icons.star, value: '1,240', label: 'XP Points', color: Colors.amber)),
         const SizedBox(width: 12),
-        Expanded(
-          child: _StatCard(
-            icon: 'ðŸ†',
-            value: 'B1',
-            label: 'CEFR Level',
-            color: AppColors.primary,
-          ),
-        ),
+        Expanded(child: _StatCard(icon: Icons.emoji_events, value: 'B1', label: 'CEFR Level', color: AppColors.primary)),
       ],
     );
   }
 
   Widget _buildDailyWord(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(colors: [AppColors.primary, AppColors.secondary]),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.all(Radius.circular(20)),
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -170,9 +162,9 @@ class _HomeTab extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text('Perseverance', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-          const Text('/pÉ™ËŒsÉªvÉªÉ™rÉ™ns/', style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const Text('/p-er-suh-VEER-ens/', style: TextStyle(color: Colors.white70, fontSize: 14)),
           const SizedBox(height: 8),
-          const Text('noun â€” Continued effort despite difficulty', style: TextStyle(color: Colors.white, fontSize: 14)),
+          const Text('noun - Continued effort despite difficulty', style: TextStyle(color: Colors.white, fontSize: 14)),
           const SizedBox(height: 8),
           const Text('"Her perseverance finally paid off."', style: TextStyle(color: Colors.white70, fontStyle: FontStyle.italic)),
           const SizedBox(height: 12),
@@ -180,9 +172,10 @@ class _HomeTab extends StatelessWidget {
             children: [
               IconButton(icon: const Icon(Icons.volume_up, color: Colors.white), onPressed: () {}),
               const Spacer(),
-              TextButton(
-                onPressed: () => context.push('/daily-words'),
-                child: const Text('See all words â†’', style: TextStyle(color: Colors.white)),
+              TextButton.icon(
+                onPressed: () {},
+                icon: const Text('See all words', style: TextStyle(color: Colors.white)),
+                label: const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
               ),
             ],
           ),
@@ -195,11 +188,11 @@ class _HomeTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Continue Learning', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text('Continue Learning', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
         const SizedBox(height: 12),
         _LessonCard(
           title: 'Present Perfect Tense',
-          subtitle: 'Level 5 â€¢ Grammar',
+          subtitle: 'Level 5 - Grammar',
           progress: 0.6,
           icon: Icons.menu_book,
           color: Colors.blue,
@@ -208,7 +201,7 @@ class _HomeTab extends StatelessWidget {
         const SizedBox(height: 8),
         _LessonCard(
           title: 'Business Vocabulary',
-          subtitle: 'Level 8 â€¢ Vocabulary',
+          subtitle: 'Level 8 - Vocabulary',
           progress: 0.3,
           icon: Icons.work_outline,
           color: Colors.purple,
@@ -229,11 +222,10 @@ class _HomeTab extends StatelessWidget {
       {'icon': Icons.sports_esports, 'label': 'Games', 'route': '/games', 'color': Colors.pink},
       {'icon': Icons.smart_toy, 'label': 'AI Tutor', 'route': '/ai-teacher', 'color': AppColors.primary},
     ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Quick Access', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text('Quick Access', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
         const SizedBox(height: 12),
         GridView.count(
           crossAxisCount: 4,
@@ -263,34 +255,33 @@ class _HomeTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('This Week', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Text('This Week', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
           const SizedBox(height: 16),
           SizedBox(
             height: 100,
-            child: BarChart(
-              BarChartData(
-                barGroups: List.generate(7, (i) => BarChartGroupData(
-                  x: i,
-                  barRods: [BarChartRodData(
-                    toY: [20, 45, 30, 80, 55, 90, 40][i].toDouble(),
-                    color: AppColors.primary,
-                    width: 16,
-                    borderRadius: BorderRadius.circular(4),
-                  )],
+            child: BarChart(BarChartData(
+              barGroups: List.generate(7, (i) => BarChartGroupData(
+                x: i,
+                barRods: [BarChartRodData(
+                  toY: [20, 45, 30, 80, 55, 90, 40][i].toDouble(),
+                  color: AppColors.primary,
+                  width: 16,
+                  borderRadius: BorderRadius.circular(4),
+                )],
+              )),
+              titlesData: FlTitlesData(
+                bottomTitles: AxisTitles(sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (v, _) => Text(['M','T','W','T','F','S','S'][v.toInt()],
+                      style: const TextStyle(fontSize: 11, color: Colors.black54)),
                 )),
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (v, _) => Text(['M','T','W','T','F','S','S'][v.toInt()], style: const TextStyle(fontSize: 11)),
-                  )),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                borderData: FlBorderData(show: false),
-                gridData: FlGridData(show: false),
+                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
               ),
-            ),
+              borderData: FlBorderData(show: false),
+              gridData: const FlGridData(show: false),
+            )),
           ),
         ],
       ),
@@ -298,8 +289,11 @@ class _HomeTab extends StatelessWidget {
   }
 }
 
+// ─── SHARED WIDGETS ─────────────────────────────────────────────────────────
+
 class _StatCard extends StatelessWidget {
-  final String icon, value, label;
+  final IconData icon;
+  final String value, label;
   final Color color;
   const _StatCard({required this.icon, required this.value, required this.label, required this.color});
 
@@ -308,12 +302,13 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8)],
       ),
       child: Column(
         children: [
-          Text(icon, style: const TextStyle(fontSize: 22)),
+          Icon(icon, color: color, size: 24),
           const SizedBox(height: 4),
           Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
           Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
@@ -345,14 +340,15 @@ class _LessonCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(width: 48, height: 48, decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+            Container(width: 48, height: 48,
+              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
               child: Icon(icon, color: color)),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87)),
                   Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 6),
                   LinearProgressIndicator(value: progress, backgroundColor: Colors.grey[200], valueColor: AlwaysStoppedAnimation(color), borderRadius: BorderRadius.circular(4)),
@@ -387,51 +383,64 @@ class _QuickAccessItem extends StatelessWidget {
             child: Icon(icon, color: color, size: 26),
           ),
           const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 11), textAlign: TextAlign.center),
+          Text(label, style: const TextStyle(fontSize: 11, color: Colors.black87), textAlign: TextAlign.center),
         ],
       ),
     );
   }
 }
 
+// ─── LEARN TAB ──────────────────────────────────────────────────────────────
+
 class _LearnTab extends StatelessWidget {
   const _LearnTab();
+
   @override
   Widget build(BuildContext context) {
+    final levels = ['Alphabet & Phonics', 'Simple Sentences', 'Beginner Conversation', 'Elementary', 'Intermediate', 'Upper Intermediate', 'Advanced', 'Business English', 'Academic English', 'IELTS / TOEFL Prep'];
+    final icons = [Icons.abc, Icons.chat_bubble_outline, Icons.record_voice_over, Icons.menu_book, Icons.school, Icons.auto_stories, Icons.emoji_events, Icons.business_center, Icons.science, Icons.assignment];
+    final colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.teal, Colors.red, Colors.indigo, Colors.brown, Colors.cyan, Colors.amber];
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Lessons'), backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(title: const Text('Lessons', style: TextStyle(color: Colors.white)), backgroundColor: AppColors.primary, iconTheme: const IconThemeData(color: Colors.white)),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: 10,
-        itemBuilder: (context, i) {
-          final levels = ['Alphabet & Phonics','Simple Sentences','Beginner Conversation','Elementary','Intermediate','Upper Intermediate','Advanced','Business English','Academic English','IELTS / TOEFL Prep'];
-          final icons = ['ðŸ”¤','ðŸ’¬','ðŸ—£ï¸','ðŸ“–','ðŸ“š','ðŸŽ“','ðŸ†','ðŸ’¼','ðŸŽ¯','ðŸ“‹'];
-          final colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.teal, Colors.red, Colors.indigo, Colors.brown, Colors.cyan, Colors.amber];
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)]),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(16),
-              leading: Container(width: 52, height: 52, decoration: BoxDecoration(color: colors[i].withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
-                child: Center(child: Text(icons[i], style: const TextStyle(fontSize: 24)))),
-              title: Text('Level ${i+1}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
-              subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(levels[i], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.black87)),
-                const SizedBox(height: 6),
-                LinearProgressIndicator(value: i == 0 ? 1.0 : i == 1 ? 0.7 : i == 2 ? 0.3 : 0, backgroundColor: Colors.grey[200], valueColor: AlwaysStoppedAnimation(colors[i]), borderRadius: BorderRadius.circular(4)),
-              ]),
-              trailing: i <= 2 ? const Icon(Icons.lock_open, color: Colors.green) : const Icon(Icons.lock, color: Colors.grey),
-              onTap: i <= 2 ? () => context.push('/lessons') : null,
-            ),
-          );
-        },
+        itemBuilder: (context, i) => Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)]),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(16),
+            leading: Container(width: 52, height: 52,
+              decoration: BoxDecoration(color: colors[i].withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
+              child: Icon(icons[i], color: colors[i], size: 28)),
+            title: Text('Level ${i + 1}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
+            subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(levels[i], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.black87)),
+              const SizedBox(height: 6),
+              LinearProgressIndicator(
+                value: i == 0 ? 1.0 : i == 1 ? 0.7 : i == 2 ? 0.3 : 0,
+                backgroundColor: Colors.grey[200],
+                valueColor: AlwaysStoppedAnimation(colors[i]),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ]),
+            trailing: i <= 2 ? const Icon(Icons.lock_open, color: Colors.green) : const Icon(Icons.lock, color: Colors.grey),
+            onTap: i <= 2 ? () => context.push('/lessons') : null,
+          ),
+        ),
       ),
     );
   }
 }
 
+// ─── PRACTICE TAB ───────────────────────────────────────────────────────────
+
 class _PracticeTab extends StatelessWidget {
   const _PracticeTab();
+
   @override
   Widget build(BuildContext context) {
     final practices = [
@@ -443,7 +452,8 @@ class _PracticeTab extends StatelessWidget {
       {'title': 'AI Conversation', 'icon': Icons.smart_toy, 'color': AppColors.primary, 'route': '/chatbot', 'desc': 'Chat with your AI tutor'},
     ];
     return Scaffold(
-      appBar: AppBar(title: const Text('Practice'), backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(title: const Text('Practice', style: TextStyle(color: Colors.white)), backgroundColor: AppColors.primary, iconTheme: const IconThemeData(color: Colors.white)),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: practices.length,
@@ -451,14 +461,16 @@ class _PracticeTab extends StatelessWidget {
           final p = practices[i];
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)]),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)]),
             child: ListTile(
               contentPadding: const EdgeInsets.all(16),
-              leading: Container(width: 52, height: 52, decoration: BoxDecoration(color: (p['color'] as Color).withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
+              leading: Container(width: 52, height: 52,
+                decoration: BoxDecoration(color: (p['color'] as Color).withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
                 child: Icon(p['icon'] as IconData, color: p['color'] as Color, size: 26)),
-              title: Text(p['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(p['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
               subtitle: Text(p['desc'] as String, style: const TextStyle(color: Colors.grey)),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
               onTap: () => context.push(p['route'] as String),
             ),
           );
@@ -468,25 +480,29 @@ class _PracticeTab extends StatelessWidget {
   }
 }
 
+// ─── PROGRESS TAB ───────────────────────────────────────────────────────────
+
 class _ProgressTab extends StatelessWidget {
   const _ProgressTab();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Progress'), backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(title: const Text('My Progress', style: TextStyle(color: Colors.white)), backgroundColor: AppColors.primary, iconTheme: const IconThemeData(color: Colors.white)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _ProgressCard('CEFR Level', 'B1 â€” Intermediate', Icons.star, Colors.amber),
+            _ProgressCard('CEFR Level', 'B1 - Intermediate', Icons.star, Colors.amber),
             const SizedBox(height: 12),
-            _ProgressCard('IELTS Estimate', '5.5 â€” Upper Intermediate', Icons.school, Colors.blue),
+            _ProgressCard('IELTS Estimate', '5.5 - Upper Intermediate', Icons.school, Colors.blue),
             const SizedBox(height: 12),
             _ProgressCard('Words Learned', '847 vocabulary words', Icons.text_fields, Colors.green),
             const SizedBox(height: 12),
             _ProgressCard('Hours Studied', '42 hours total', Icons.timer, Colors.purple),
             const SizedBox(height: 12),
-            _ProgressCard('Current Streak', '7 days ðŸ”¥', Icons.local_fire_department, Colors.orange),
+            _ProgressCard('Current Streak', '7 days', Icons.local_fire_department, Colors.orange),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => context.push('/progress'),
@@ -511,17 +527,19 @@ class _ProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)]),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)]),
       child: Row(
         children: [
-          Container(width: 48, height: 48, decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+          Container(width: 48, height: 48,
+            decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: color)),
           const SizedBox(width: 16),
           Expanded(child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-              Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
             ],
           )),
         ],
@@ -530,12 +548,16 @@ class _ProgressCard extends StatelessWidget {
   }
 }
 
+// ─── PROFILE TAB ────────────────────────────────────────────────────────────
+
 class _ProfileTab extends StatelessWidget {
   const _ProfileTab();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile'), backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(title: const Text('Profile', style: TextStyle(color: Colors.white)), backgroundColor: AppColors.primary, iconTheme: const IconThemeData(color: Colors.white)),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -543,14 +565,12 @@ class _ProfileTab extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(32),
               decoration: const BoxDecoration(color: AppColors.primary),
-              child: Column(children: [
-                const CircleAvatar(radius: 40, backgroundColor: Colors.white24, child: Icon(Icons.person, size: 40, color: Colors.white)),
-                const SizedBox(height: 12),
-                const Text('Student Name', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                const Text('student@email.com', style: TextStyle(color: Colors.white70)),
-                const SizedBox(height: 8),
-                Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
-                  child: const Text('B1 â€” Intermediate ðŸ†', style: TextStyle(color: Colors.white))),
+              child: const Column(children: [
+                CircleAvatar(radius: 40, backgroundColor: Colors.white24, child: Icon(Icons.person, size: 40, color: Colors.white)),
+                SizedBox(height: 12),
+                Text('Student Name', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('student@email.com', style: TextStyle(color: Colors.white70)),
+                SizedBox(height: 8),
               ]),
             ),
             const SizedBox(height: 8),
@@ -577,12 +597,14 @@ class _ProfileTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: color ?? AppColors.primary),
-      title: Text(label, style: TextStyle(color: color)),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: onTap,
+    return Container(
+      color: Colors.white,
+      child: ListTile(
+        leading: Icon(icon, color: color ?? AppColors.primary),
+        title: Text(label, style: TextStyle(color: color ?? Colors.black87)),
+        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        onTap: onTap,
+      ),
     );
   }
 }
-

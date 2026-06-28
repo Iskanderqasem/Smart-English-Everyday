@@ -109,13 +109,13 @@ class _AssessmentPageState extends State<AssessmentPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('🎯', style: TextStyle(fontSize: 80)),
+          const Icon(Icons.gps_fixed, size: 80, color: AppColors.primary),
           const SizedBox(height: 24),
-          const Text('AI Level Assessment', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+          const Text('AI Level Assessment', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87), textAlign: TextAlign.center),
           const SizedBox(height: 16),
           const Text(
             'We\'ll assess your English level across Reading, Listening, Writing, and Grammar to create your personalized learning plan.',
-            style: TextStyle(fontSize: 16, color: Colors.grey, height: 1.6),
+            style: TextStyle(fontSize: 16, color: Colors.black54, height: 1.6),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -150,7 +150,7 @@ The Amazon rainforest, often called the "lungs of the Earth," produces about 20%
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Read the following passage aloud:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const Text('Read the following passage aloud:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(20),
@@ -194,7 +194,7 @@ The Amazon rainforest, often called the "lungs of the Earth," produces about 20%
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Listen and answer the questions:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const Text('Listen and answer the questions:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(20),
@@ -244,12 +244,12 @@ The Amazon rainforest, often called the "lungs of the Earth," produces about 20%
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Write 2–3 paragraphs on the topic below:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const Text('Write 2-3 paragraphs on the topic below:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(12)),
-            child: const Text('📝 Topic: Describe the benefits and challenges of learning a new language.', style: TextStyle(fontSize: 15, height: 1.5)),
+            child: const Text('Topic: Describe the benefits and challenges of learning a new language.', style: TextStyle(fontSize: 15, height: 1.5, color: Colors.black87)),
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -278,9 +278,9 @@ The Amazon rainforest, often called the "lungs of the Earth," produces about 20%
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Question ${_currentQuestion + 1} of ${_grammarQuestions.length}', style: const TextStyle(color: Colors.grey)),
+          Text('Question ${_currentQuestion + 1} of ${_grammarQuestions.length}', style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 16),
-          Text(q['q'], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(q['q'], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
           const SizedBox(height: 24),
           ...(q['options'] as List<String>).asMap().entries.map((e) => Container(
             margin: const EdgeInsets.only(bottom: 12),
@@ -331,11 +331,11 @@ The Amazon rainforest, often called the "lungs of the Earth," produces about 20%
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Text('🎉', style: TextStyle(fontSize: 60)),
+          const Icon(Icons.celebration, size: 60, color: Colors.amber),
           const SizedBox(height: 16),
-          const Text('Assessment Complete!', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          const Text('Assessment Complete!', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
           const SizedBox(height: 8),
-          const Text('Here are your results:', style: TextStyle(color: Colors.grey)),
+          const Text('Here are your results:', style: TextStyle(color: Colors.black54)),
           const SizedBox(height: 32),
           _ResultCard('CEFR Level', 'B1 — Intermediate', '🏆', Colors.amber),
           const SizedBox(height: 12),
