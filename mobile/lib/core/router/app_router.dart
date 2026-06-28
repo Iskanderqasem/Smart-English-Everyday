@@ -26,6 +26,7 @@ import '../../features/chatbot/presentation/pages/chatbot_page.dart';
 import '../../features/daily_words/presentation/pages/daily_words_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
+import '../../features/admin/presentation/pages/admin_login_page.dart';
 import '../../features/parent/presentation/pages/parent_dashboard_page.dart';
 
 class AppRouter {
@@ -62,6 +63,7 @@ class AppRouter {
   static const String proverbs = '/proverbs';
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String adminLogin = '/admin-login';
   static const String admin = '/admin';
   static const String parent = '/parent';
 
@@ -171,6 +173,10 @@ class AppRouter {
       GoRoute(
         path: profile,
         pageBuilder: (context, state) => _buildPage(const ProfilePage(), state),
+      ),
+      GoRoute(
+        path: adminLogin,
+        pageBuilder: (context, state) => _buildPage(const AdminLoginPage(), state),
       ),
       GoRoute(
         path: admin,
