@@ -66,19 +66,39 @@ class _HomePageState extends State<HomePage> {
 class _HomeTab extends StatelessWidget {
   const _HomeTab();
 
+  String _greeting() {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good morning!';
+    if (h < 17) return 'Good afternoon!';
+    return 'Good evening!';
+  }
+
   @override
   Widget build(BuildContext context) {
+    UserModel? user;
+    try {
+      final data = sl<StorageService>().getUserData();
+      if (data != null) user = UserModel.fromJson(data);
+    } catch (_) {}
+
+    final firstName = user?.fullName.split(' ').first ?? 'Student';
+    final initials = () {
+      final parts = (user?.fullName ?? '').trim().split(' ');
+      if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+      return parts.isNotEmpty && parts[0].isNotEmpty ? parts[0][0].toUpperCase() : 'S';
+    }();
+
     return CustomScrollView(
       slivers: [
         SliverAppBar(
           floating: true,
           backgroundColor: AppColors.primary,
           expandedHeight: 60,
-          title: const Column(
+          title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Good morning!', style: TextStyle(fontSize: 13, color: Colors.white70)),
-              Text('Keep learning!', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+              Text(_greeting(), style: const TextStyle(fontSize: 13, color: Colors.white70)),
+              Text('Hi, $firstName!', style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
             ],
           ),
           actions: [
@@ -94,11 +114,14 @@ class _HomeTab extends StatelessWidget {
                 ),
               ],
             ),
-            const Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: CircleAvatar(
-                backgroundColor: Colors.white24,
-                child: Text('S', style: TextStyle(color: Colors.white)),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: () => context.go('/profile'),
+                child: CircleAvatar(
+                  backgroundColor: Colors.white24,
+                  child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
               ),
             ),
           ],
