@@ -35,27 +35,22 @@ jobs:
         working-directory: mobile
         run: flutter pub get
 
-      - name: Flutter Analyze (show errors)
-        working-directory: mobile
-        run: flutter analyze 2>&1 || true
-
       - name: Build Flutter Web
         working-directory: mobile
         run: |
-          flutter build web \
+          set +e
+          OUTPUT=$(flutter build web \
             --release \
             --base-href "/Smart-English-Everyday/" \
-            --web-renderer canvaskit \
-            --verbose 2>&1 | tee /tmp/build_log.txt
-          exit ${PIPESTATUS[0]}
-
-      - name: Show build log on failure
-        if: failure()
-        run: |
-          echo "=== DART ERRORS ==="
-          grep -E "error:|Error:|\.dart:" /tmp/build_log.txt | head -80 || true
-          echo "=== LAST 100 LINES ==="
-          tail -100 /tmp/build_log.txt || true
+            --web-renderer canvaskit 2>&1)
+          EXIT_CODE=$?
+          echo "$OUTPUT"
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "$OUTPUT" | grep -E "error:|Error:|\.dart:|exception" | head -40 | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+          fi
+          exit $EXIT_CODE
 
       - name: Add .nojekyll
         run: touch mobile/build/web/.nojekyll
