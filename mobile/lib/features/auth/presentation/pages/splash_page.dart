@@ -35,10 +35,14 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
         if (state is AuthAuthenticated) {
           context.go(AppRouter.home);
         } else if (state is AuthUnauthenticated) {
-          final storage = sl<StorageService>();
-          if (storage.isOnboardingComplete) {
-            context.go(AppRouter.login);
-          } else {
+          try {
+            final storage = sl<StorageService>();
+            if (storage.isOnboardingComplete) {
+              context.go(AppRouter.login);
+            } else {
+              context.go(AppRouter.onboarding);
+            }
+          } catch (_) {
             context.go(AppRouter.onboarding);
           }
         } else if (state is AuthNeedsEmailVerification) {

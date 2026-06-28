@@ -58,7 +58,7 @@ class SmartEnglishApp extends StatelessWidget {
           create: (_) => AuthBloc(
             authService: sl<AuthService>(),
             storageService: sl<StorageService>(),
-          )..add(const AuthCheckRequested()),
+          ),
         ),
       ],
       child: MaterialApp.router(
