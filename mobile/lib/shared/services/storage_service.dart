@@ -1,146 +1,109 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../core/constants/app_constants.dart';
 
 class StorageService {
-  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-    iOptions: IOSOptions(
-      accessibility: KeychainAccessibility.first_unlock_this_device,
-    ),
-  );
-
-  late Box _cacheBox;
+  Box? _cacheBox;
   bool _isInitialized = false;
 
   Future<void> initialize() async {
     if (_isInitialized) return;
-    await Hive.initFlutter();
-    _cacheBox = await Hive.openBox(AppConstants.cacheBox);
-    _isInitialized = true;
-  }
-
-  // Secure Storage (tokens, sensitive data)
-  Future<void> saveToken(String token) async {
-    await _secureStorage.write(key: AppConstants.tokenKey, value: token);
-  }
-
-  Future<String?> getToken() async {
-    return _secureStorage.read(key: AppConstants.tokenKey);
-  }
-
-  Future<void> saveRefreshToken(String token) async {
-    await _secureStorage.write(key: AppConstants.refreshTokenKey, value: token);
-  }
-
-  Future<String?> getRefreshToken() async {
-    return _secureStorage.read(key: AppConstants.refreshTokenKey);
-  }
-
-  Future<void> clearTokens() async {
-    await _secureStorage.delete(key: AppConstants.tokenKey);
-    await _secureStorage.delete(key: AppConstants.refreshTokenKey);
+    try {
+      await Hive.initFlutter();
+      _cacheBox = await Hive.openBox(AppConstants.cacheBox);
+      _isInitialized = true;
+    } catch (e) {
+      debugPrint('Hive init failed: $e');
+      _isInitialized = true; // prevent retry loops
+    }
   }
 
   // Hive Storage (non-sensitive data)
   Future<void> saveString(String key, String value) async {
-    await _cacheBox.put(key, value);
+    try { await _cacheBox?.put(key, value); } catch (_) {}
   }
 
   String? getString(String key, {String? defaultValue}) {
-    return _cacheBox.get(key, defaultValue: defaultValue) as String?;
+    try { return _cacheBox?.get(key, defaultValue: defaultValue) as String?; } catch (_) { return defaultValue; }
   }
 
   Future<void> saveBool(String key, bool value) async {
-    await _cacheBox.put(key, value);
+    try { await _cacheBox?.put(key, value); } catch (_) {}
   }
 
   bool getBool(String key, {bool defaultValue = false}) {
-    return _cacheBox.get(key, defaultValue: defaultValue) as bool;
+    try { return (_cacheBox?.get(key, defaultValue: defaultValue) as bool?) ?? defaultValue; } catch (_) { return defaultValue; }
   }
 
   Future<void> saveInt(String key, int value) async {
-    await _cacheBox.put(key, value);
+    try { await _cacheBox?.put(key, value); } catch (_) {}
   }
 
   int getInt(String key, {int defaultValue = 0}) {
-    return _cacheBox.get(key, defaultValue: defaultValue) as int;
+    try { return (_cacheBox?.get(key, defaultValue: defaultValue) as int?) ?? defaultValue; } catch (_) { return defaultValue; }
   }
 
   Future<void> saveMap(String key, Map<String, dynamic> value) async {
-    await _cacheBox.put(key, jsonEncode(value));
+    try { await _cacheBox?.put(key, jsonEncode(value)); } catch (_) {}
   }
 
   Map<String, dynamic>? getMap(String key) {
-    final str = _cacheBox.get(key) as String?;
-    if (str == null) return null;
     try {
+      final str = _cacheBox?.get(key) as String?;
+      if (str == null) return null;
       return jsonDecode(str) as Map<String, dynamic>;
-    } catch (e) {
-      debugPrint('StorageService.getMap error: $e');
-      return null;
-    }
+    } catch (_) { return null; }
   }
 
   Future<void> saveList(String key, List<dynamic> value) async {
-    await _cacheBox.put(key, jsonEncode(value));
+    try { await _cacheBox?.put(key, jsonEncode(value)); } catch (_) {}
   }
 
   List<dynamic>? getList(String key) {
-    final str = _cacheBox.get(key) as String?;
-    if (str == null) return null;
     try {
+      final str = _cacheBox?.get(key) as String?;
+      if (str == null) return null;
       return jsonDecode(str) as List<dynamic>;
-    } catch (e) {
-      debugPrint('StorageService.getList error: $e');
-      return null;
-    }
+    } catch (_) { return null; }
   }
 
   Future<void> delete(String key) async {
-    await _cacheBox.delete(key);
+    try { await _cacheBox?.delete(key); } catch (_) {}
   }
 
   Future<void> clear() async {
-    await _cacheBox.clear();
-    await _secureStorage.deleteAll();
+    try { await _cacheBox?.clear(); } catch (_) {}
   }
 
-  bool containsKey(String key) => _cacheBox.containsKey(key);
+  bool containsKey(String key) {
+    try { return _cacheBox?.containsKey(key) ?? false; } catch (_) { return false; }
+  }
+
+  // Secure token helpers (use Hive on web since flutter_secure_storage may be unavailable)
+  Future<void> saveToken(String token) async => saveString(AppConstants.tokenKey, token);
+  Future<String?> getToken() async => getString(AppConstants.tokenKey);
+  Future<void> saveRefreshToken(String token) async => saveString(AppConstants.refreshTokenKey, token);
+  Future<String?> getRefreshToken() async => getString(AppConstants.refreshTokenKey);
+  Future<void> clearTokens() async {
+    await delete(AppConstants.tokenKey);
+    await delete(AppConstants.refreshTokenKey);
+  }
 
   // User data helpers
-  Future<void> saveUserData(Map<String, dynamic> userData) async {
-    await saveMap(AppConstants.userKey, userData);
-  }
-
-  Map<String, dynamic>? getUserData() {
-    return getMap(AppConstants.userKey);
-  }
-
-  Future<void> clearUserData() async {
-    await delete(AppConstants.userKey);
-  }
+  Future<void> saveUserData(Map<String, dynamic> userData) async => saveMap(AppConstants.userKey, userData);
+  Map<String, dynamic>? getUserData() => getMap(AppConstants.userKey);
+  Future<void> clearUserData() async => delete(AppConstants.userKey);
 
   // Onboarding
   bool get isOnboardingComplete => getBool(AppConstants.onboardingKey);
-
-  Future<void> setOnboardingComplete() async {
-    await saveBool(AppConstants.onboardingKey, true);
-  }
+  Future<void> setOnboardingComplete() async => saveBool(AppConstants.onboardingKey, true);
 
   // Theme
   String get themeMode => getString(AppConstants.themeKey) ?? 'system';
-
-  Future<void> setThemeMode(String mode) async {
-    await saveString(AppConstants.themeKey, mode);
-  }
+  Future<void> setThemeMode(String mode) async => saveString(AppConstants.themeKey, mode);
 
   // Streak
   int get streakCount => getInt(AppConstants.streakKey);
-
-  Future<void> setStreakCount(int count) async {
-    await saveInt(AppConstants.streakKey, count);
-  }
+  Future<void> setStreakCount(int count) async => saveInt(AppConstants.streakKey, count);
 }

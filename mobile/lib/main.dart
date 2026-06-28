@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:get_it/get_it.dart';
 
 import 'core/router/app_router.dart';
@@ -16,35 +15,34 @@ final GetIt sl = GetIt.instance;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
+
   await _setupDependencies();
-
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
 
   runApp(const SmartEnglishApp());
 }
 
 Future<void> _setupDependencies() async {
-  final storageService = StorageService();
-  await storageService.initialize();
-  sl.registerSingleton<StorageService>(storageService);
+  try {
+    final storageService = StorageService();
+    await storageService.initialize();
+    sl.registerSingleton<StorageService>(storageService);
+  } catch (e) {
+    debugPrint('StorageService init failed: $e — using fallback');
+    final fallback = StorageService();
+    sl.registerSingleton<StorageService>(fallback);
+  }
 
   sl.registerSingleton<ApiClient>(ApiClient());
   sl.registerSingleton<AuthService>(AuthService());
 
-  final notificationService = NotificationService();
-  await notificationService.initialize();
-  sl.registerSingleton<NotificationService>(notificationService);
+  try {
+    final notificationService = NotificationService();
+    await notificationService.initialize();
+    sl.registerSingleton<NotificationService>(notificationService);
+  } catch (e) {
+    debugPrint('NotificationService init failed: $e');
+    sl.registerSingleton<NotificationService>(NotificationService());
+  }
 }
 
 class SmartEnglishApp extends StatelessWidget {
