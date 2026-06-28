@@ -19,7 +19,6 @@
 
   <!-- Theme color -->
   <meta name="theme-color" content="#1565C0">
-  <meta name="msapplication-navbutton-color" content="#1565C0">
 
   <title>Smart English Everyday</title>
 
@@ -44,10 +43,10 @@
     <div id="loading-bar"><div id="loading-bar-fill"></div></div>
   </div>
 
+  <script src="flutter.js" defer></script>
   <script>
     window.addEventListener('load', function(ev) {
       _flutter.loader.loadEntrypoint({
-        serviceWorker: { serviceWorkerVersion: serviceWorkerVersion },
         onEntrypointLoaded: async function(engineInitializer) {
           let appRunner = await engineInitializer.initializeEngine();
           document.getElementById('loading').style.display = 'none';
@@ -56,6 +55,5 @@
       });
     });
   </script>
-  <script src="flutter.js" defer></script>
 </body>
 </html>
