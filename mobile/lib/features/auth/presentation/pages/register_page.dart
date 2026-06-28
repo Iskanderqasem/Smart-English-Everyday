@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -28,11 +28,11 @@ class _RegisterPageState extends State<RegisterPage> {
   int _currentStep = 0;
 
   final List<Map<String, String>> _englishVariants = [
-    {'code': 'UK', 'name': '🇬🇧 United Kingdom English'},
-    {'code': 'US', 'name': '🇺🇸 United States English'},
-    {'code': 'AU', 'name': '🇦🇺 Australian English'},
-    {'code': 'NZ', 'name': '🇳🇿 New Zealand English'},
-    {'code': 'CA', 'name': '🇨🇦 Canadian English'},
+    {'code': 'UK', 'name': 'ðŸ‡¬ðŸ‡§ United Kingdom English'},
+    {'code': 'US', 'name': 'ðŸ‡ºðŸ‡¸ United States English'},
+    {'code': 'AU', 'name': 'ðŸ‡¦ðŸ‡º Australian English'},
+    {'code': 'NZ', 'name': 'ðŸ‡³ðŸ‡¿ New Zealand English'},
+    {'code': 'CA', 'name': 'ðŸ‡¨ðŸ‡¦ Canadian English'},
   ];
 
   @override
@@ -263,14 +263,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _handleRegister() {
     if (_formKey.currentState!.validate()) {
-      context.read<AuthBloc>().add(AuthRegisterEvent(
-        firstName: _firstNameCtrl.text.trim(),
-        lastName: _lastNameCtrl.text.trim(),
+      context.read<AuthBloc>().add(AuthRegisterRequested(
+        fullName: '${_firstNameCtrl.text.trim()} ${_lastNameCtrl.text.trim()}'.trim(),
         username: _usernameCtrl.text.trim(),
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
         englishVariant: _selectedVariant,
+        country: 'GB',
       ));
     }
   }
 }
+

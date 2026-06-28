@@ -36,8 +36,7 @@ class _LoginPageState extends State<LoginPage> {
             AuthLoginRequested(
               email: _emailController.text,
               password: _passwordController.text,
-              rememberMe: _rememberMe,
-            ),
+              ),
           );
     }
   }
@@ -258,4 +257,5 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
 
