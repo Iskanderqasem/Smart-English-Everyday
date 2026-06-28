@@ -1,4 +1,4 @@
-﻿name: CI/CD Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -18,9 +18,9 @@ env:
 
 jobs:
 
-  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # -----------------------------------------
   build-flutter-web:
-    name: ðŸŒ Build Flutter Web + Deploy to GitHub Pages
+    name: Build Flutter Web + Deploy to GitHub Pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,13 +46,16 @@ jobs:
             --release \
             --base-href "/Smart-English-Everyday/" \
             --web-renderer canvaskit \
-            --verbose 2>&1 | tee /tmp/build_log.txt; exit ${PIPESTATUS[0]}
+            --verbose 2>&1 | tee /tmp/build_log.txt
+          exit ${PIPESTATUS[0]}
 
       - name: Show build log on failure
         if: failure()
         run: |
-          echo "=== BUILD LOG ==="
-          cat /tmp/build_log.txt | grep -E "error:|Error:|\.dart:|warning:" | head -50 || cat /tmp/build_log.txt | tail -100
+          echo "=== DART ERRORS ==="
+          grep -E "error:|Error:|\.dart:" /tmp/build_log.txt | head -80 || true
+          echo "=== LAST 100 LINES ==="
+          tail -100 /tmp/build_log.txt || true
 
       - name: Add .nojekyll
         run: touch mobile/build/web/.nojekyll
@@ -66,9 +69,9 @@ jobs:
           force_orphan: true
           commit_message: "deploy: Flutter web build ${{ github.sha }}"
 
-  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # -----------------------------------------
   build-android-debug-apk:
-    name: ðŸ“± Build Debug APK + Generate QR
+    name: Build Debug APK + Generate QR
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -99,17 +102,17 @@ jobs:
           tag_name: latest-debug
           name: "Latest Debug Build"
           body: |
-            ## ðŸ“± Smart English Everyday â€” Debug APK
+            ## Smart English Everyday - Debug APK
 
             **Auto-built from the latest commit on master.**
 
             ### Install on Android:
             1. Download `app-debug.apk` below
-            2. On your Android phone: Settings â†’ Security â†’ Enable **"Install unknown apps"**
+            2. On your Android phone: Settings -> Security -> Enable "Install unknown apps"
             3. Open the downloaded APK and install
 
             ### Web App (runs in browser):
-            ðŸŒ **https://iskanderqasem.github.io/Smart-English-Everyday/**
+            https://iskanderqasem.github.io/Smart-English-Everyday/
 
             ---
             Built from commit: `${{ github.sha }}`
@@ -155,9 +158,9 @@ jobs:
           path: mobile/build/app/outputs/flutter-apk/app-debug.apk
           retention-days: 90
 
-  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # -----------------------------------------
   analyze-flutter:
-    name: ðŸ” Flutter Analyze
+    name: Flutter Analyze
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -176,9 +179,9 @@ jobs:
         working-directory: mobile
         run: flutter analyze --no-fatal-infos || true
 
-  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # -----------------------------------------
   test-backend:
-    name: ðŸ§ª Backend Tests
+    name: Backend Tests
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -220,4 +223,3 @@ jobs:
           REDIS_URL: redis://localhost:6379
           JWT_SECRET: ci_test_secret_key_32_chars_long
           JWT_REFRESH_SECRET: ci_refresh_secret_key_32_chars
-
