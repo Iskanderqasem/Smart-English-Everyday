@@ -6,6 +6,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/services/storage_service.dart';
+import '../../../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../../main.dart';
 
 class HomePage extends StatefulWidget {
@@ -132,7 +133,7 @@ class _HomeTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStreakAndXP(),
+                _buildStreakAndXP(user),
                 const SizedBox(height: 20),
                 _buildDailyWord(context),
                 const SizedBox(height: 20),
@@ -150,16 +151,24 @@ class _HomeTab extends StatelessWidget {
     );
   }
 
-  Widget _buildStreakAndXP() {
+  Widget _buildStreakAndXP(UserModel? user) {
+    final streak = user?.streakDays.toString() ?? '0';
+    final xp = user != null ? _formatXp(user.totalXp) : '0';
+    final level = user?.cefrLevel ?? 'A1';
     return Row(
       children: [
-        Expanded(child: _StatCard(icon: Icons.local_fire_department, value: '7', label: 'Day Streak', color: Colors.orange)),
+        Expanded(child: _StatCard(icon: Icons.local_fire_department, value: streak, label: 'Day Streak', color: Colors.orange)),
         const SizedBox(width: 12),
-        Expanded(child: _StatCard(icon: Icons.star, value: '1,240', label: 'XP Points', color: Colors.amber)),
+        Expanded(child: _StatCard(icon: Icons.star, value: xp, label: 'XP Points', color: Colors.amber)),
         const SizedBox(width: 12),
-        Expanded(child: _StatCard(icon: Icons.emoji_events, value: 'B1', label: 'CEFR Level', color: AppColors.primary)),
+        Expanded(child: _StatCard(icon: Icons.emoji_events, value: level, label: 'CEFR Level', color: AppColors.primary)),
       ],
     );
+  }
+
+  String _formatXp(int xp) {
+    if (xp >= 1000) return '${(xp / 1000).toStringAsFixed(1)}k';
+    return xp.toString();
   }
 
   Widget _buildDailyWord(BuildContext context) {
@@ -505,11 +514,32 @@ class _PracticeTab extends StatelessWidget {
 
 // ─── PROGRESS TAB ───────────────────────────────────────────────────────────
 
-class _ProgressTab extends StatelessWidget {
+class _ProgressTab extends StatefulWidget {
   const _ProgressTab();
 
   @override
+  State<_ProgressTab> createState() => _ProgressTabState();
+}
+
+class _ProgressTabState extends State<_ProgressTab> {
+  UserModel? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    try {
+      final data = sl<StorageService>().getUserData();
+      if (data != null) _user = UserModel.fromJson(data);
+    } catch (_) {}
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final level = _user?.cefrLevel ?? 'A1';
+    final levelDesc = _levelDescription(level);
+    final streak = _user?.streakDays ?? 0;
+    final ielts = _user?.ieltsEstimate;
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(title: const Text('My Progress', style: TextStyle(color: Colors.white)), backgroundColor: AppColors.primary, iconTheme: const IconThemeData(color: Colors.white)),
@@ -517,15 +547,15 @@ class _ProgressTab extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _ProgressCard('CEFR Level', 'B1 - Intermediate', Icons.star, Colors.amber),
+            _ProgressCard('CEFR Level', '$level - $levelDesc', Icons.star, Colors.amber),
             const SizedBox(height: 12),
-            _ProgressCard('IELTS Estimate', '5.5 - Upper Intermediate', Icons.school, Colors.blue),
+            if (ielts != null) ...[
+              _ProgressCard('IELTS Estimate', '${ielts.toStringAsFixed(1)}', Icons.school, Colors.blue),
+              const SizedBox(height: 12),
+            ],
+            _ProgressCard('Current Streak', '$streak day${streak == 1 ? '' : 's'}', Icons.local_fire_department, Colors.orange),
             const SizedBox(height: 12),
-            _ProgressCard('Words Learned', '847 vocabulary words', Icons.text_fields, Colors.green),
-            const SizedBox(height: 12),
-            _ProgressCard('Hours Studied', '42 hours total', Icons.timer, Colors.purple),
-            const SizedBox(height: 12),
-            _ProgressCard('Current Streak', '7 days', Icons.local_fire_department, Colors.orange),
+            _ProgressCard('Total XP', '${_user?.totalXp ?? 0} points', Icons.military_tech, Colors.purple),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => context.push('/progress'),
@@ -537,6 +567,18 @@ class _ProgressTab extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _levelDescription(String level) {
+    switch (level) {
+      case 'A1': return 'Beginner';
+      case 'A2': return 'Elementary';
+      case 'B1': return 'Intermediate';
+      case 'B2': return 'Upper Intermediate';
+      case 'C1': return 'Advanced';
+      case 'C2': return 'Proficient';
+      default: return 'Beginner';
+    }
   }
 }
 
@@ -573,8 +615,37 @@ class _ProgressCard extends StatelessWidget {
 
 // ─── PROFILE TAB ────────────────────────────────────────────────────────────
 
-class _ProfileTab extends StatelessWidget {
+class _ProfileTab extends StatefulWidget {
   const _ProfileTab();
+
+  @override
+  State<_ProfileTab> createState() => _ProfileTabState();
+}
+
+class _ProfileTabState extends State<_ProfileTab> {
+  UserModel? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    try {
+      final data = sl<StorageService>().getUserData();
+      if (data != null) _user = UserModel.fromJson(data);
+    } catch (_) {}
+  }
+
+  String get _displayName => _user?.fullName.isNotEmpty == true ? _user!.fullName : 'Student';
+  String get _email => _user?.email ?? '';
+  String get _initials {
+    final parts = _displayName.trim().split(' ');
+    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    return _displayName.isNotEmpty ? _displayName[0].toUpperCase() : 'S';
+  }
+
+  void _signOut() {
+    context.read<AuthBloc>().add(const AuthLogoutRequested());
+    context.go('/login');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -587,23 +658,28 @@ class _ProfileTab extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(32),
-              decoration: const BoxDecoration(color: AppColors.primary),
-              child: const Column(children: [
-                CircleAvatar(radius: 40, backgroundColor: Colors.white24, child: Icon(Icons.person, size: 40, color: Colors.white)),
-                SizedBox(height: 12),
-                Text('Student Name', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                Text('student@email.com', style: TextStyle(color: Colors.white70)),
-                SizedBox(height: 8),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(colors: [AppColors.primary, AppColors.secondary]),
+              ),
+              child: Column(children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.white24,
+                  child: Text(_initials, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+                const SizedBox(height: 12),
+                Text(_displayName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                if (_email.isNotEmpty) Text(_email, style: const TextStyle(color: Colors.white70)),
+                const SizedBox(height: 8),
               ]),
             ),
             const SizedBox(height: 8),
-            _ProfileTile(Icons.person, 'Edit Profile', () => context.push('/profile')),
+            _ProfileTile(Icons.person, 'Full Profile', () => context.push('/profile')),
             _ProfileTile(Icons.bar_chart, 'My Progress', () => context.push('/progress')),
             _ProfileTile(Icons.emoji_events, 'Achievements', () {}),
             _ProfileTile(Icons.card_membership, 'Certificates', () {}),
-            _ProfileTile(Icons.settings, 'Settings', () {}),
             _ProfileTile(Icons.help_outline, 'Help & Support', () {}),
-            _ProfileTile(Icons.logout, 'Sign Out', () {}, color: Colors.red),
+            _ProfileTile(Icons.logout, 'Sign Out', _signOut, color: Colors.red),
           ],
         ),
       ),
