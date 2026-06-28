@@ -180,7 +180,7 @@ The Amazon rainforest, often called the "lungs of the Earth," produces about 20%
             CustomButton(
               label: 'Skip this step',
               onPressed: () => setState(() => _step = 2),
-              isOutlined: true,
+              variant: ButtonVariant.outlined,
             ),
         ],
       ),

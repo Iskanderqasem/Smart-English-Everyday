@@ -43,7 +43,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           const SizedBox(height: 8),
           const Text('Enter your email and we\'ll send you a reset link.', style: TextStyle(color: Colors.grey, fontSize: 16)),
           const SizedBox(height: 32),
-          CustomTextField(controller: _emailCtrl, label: 'Email Address', prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress, validator: Validators.email),
+          CustomTextField(controller: _emailCtrl, label: 'Email Address', prefixIcon: const Icon(Icons.email_outlined), keyboardType: TextInputType.emailAddress, validator: AppValidators.email),
           const SizedBox(height: 24),
           CustomButton(label: 'Send Reset Link', isLoading: _loading, onPressed: _submit),
           const SizedBox(height: 16),

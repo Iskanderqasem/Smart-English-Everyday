@@ -66,7 +66,7 @@ class _GrammarPageState extends State<GrammarPage> {
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
                     leading: Container(width: 52, height: 52, decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
-                      child: Center(child: Text(t['icon'] as String, style: const TextStyle(fontSize: t['icon'] == 'if' ? 16 : 22)))),
+                      child: Center(child: Text(t['icon'] as String, style: const TextStyle(fontSize: 22)))),
                     title: Row(children: [
                       Expanded(child: Text(t['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold))),
                       Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(8)),
