@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
@@ -15,34 +14,22 @@ final GetIt sl = GetIt.instance;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await _setupDependencies();
-
   runApp(const SmartEnglishApp());
 }
 
 Future<void> _setupDependencies() async {
-  try {
-    final storageService = StorageService();
-    await storageService.initialize();
-    sl.registerSingleton<StorageService>(storageService);
-  } catch (e) {
-    debugPrint('StorageService init failed: $e — using fallback');
-    final fallback = StorageService();
-    sl.registerSingleton<StorageService>(fallback);
-  }
+  if (sl.isRegistered<StorageService>()) return;
 
+  final storageService = StorageService();
+  try { await storageService.initialize(); } catch (_) {}
+  sl.registerSingleton<StorageService>(storageService);
   sl.registerSingleton<ApiClient>(ApiClient());
   sl.registerSingleton<AuthService>(AuthService());
 
-  try {
-    final notificationService = NotificationService();
-    await notificationService.initialize();
-    sl.registerSingleton<NotificationService>(notificationService);
-  } catch (e) {
-    debugPrint('NotificationService init failed: $e');
-    sl.registerSingleton<NotificationService>(NotificationService());
-  }
+  final notificationService = NotificationService();
+  try { await notificationService.initialize(); } catch (_) {}
+  sl.registerSingleton<NotificationService>(notificationService);
 }
 
 class SmartEnglishApp extends StatelessWidget {

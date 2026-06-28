@@ -42,7 +42,7 @@ jobs:
           OUTPUT=$(flutter build web \
             --release \
             --base-href "/Smart-English-Everyday/" \
-            --web-renderer canvaskit 2>&1)
+            --web-renderer html 2>&1)
           EXIT_CODE=$?
           echo "$OUTPUT"
           if [ $EXIT_CODE -ne 0 ]; then
