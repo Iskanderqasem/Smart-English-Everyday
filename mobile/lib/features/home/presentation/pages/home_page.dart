@@ -1,0 +1,586 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:fl_chart/fl_chart.dart';
+
+import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/models/user_model.dart';
+import '../../../../shared/services/storage_service.dart';
+import '../../../../main.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+  UserModel? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  void _loadUser() {
+    final storage = sl<StorageService>();
+    setState(() => _user = storage.getUser());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: const [
+          _HomeTab(),
+          _LearnTab(),
+          _PracticeTab(),
+          _ProgressTab(),
+          _ProfileTab(),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
+          NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Learn'),
+          NavigationDestination(icon: Icon(Icons.sports_esports_outlined), selectedIcon: Icon(Icons.sports_esports), label: 'Practice'),
+          NavigationDestination(icon: Icon(Icons.bar_chart_outlined), selectedIcon: Icon(Icons.bar_chart), label: 'Progress'),
+          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeTab extends StatelessWidget {
+  const _HomeTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          floating: true,
+          backgroundColor: AppColors.primary,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Good morning! 👋', style: TextStyle(fontSize: 13, color: Colors.white70)),
+              Text('Keep learning!', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          actions: [
+            Stack(
+              children: [
+                IconButton(icon: const Icon(Icons.notifications_outlined, color: Colors.white), onPressed: () => context.push('/notifications')),
+                Positioned(right: 8, top: 8, child: Container(width: 8, height: 8, decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle))),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: CircleAvatar(backgroundColor: Colors.white24, child: Text('S', style: TextStyle(color: Colors.white))),
+            ),
+          ],
+          expandedHeight: 60,
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStreakAndXP(),
+                const SizedBox(height: 20),
+                _buildDailyWord(context),
+                const SizedBox(height: 20),
+                _buildContinueLearning(context),
+                const SizedBox(height: 20),
+                _buildQuickAccess(context),
+                const SizedBox(height: 20),
+                _buildWeeklyProgress(),
+                const SizedBox(height: 80),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStreakAndXP() {
+    return Row(
+      children: [
+        Expanded(
+          child: _StatCard(
+            icon: '🔥',
+            value: '7',
+            label: 'Day Streak',
+            color: Colors.orange,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _StatCard(
+            icon: '⭐',
+            value: '1,240',
+            label: 'XP Points',
+            color: Colors.amber,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _StatCard(
+            icon: '🏆',
+            value: 'B1',
+            label: 'CEFR Level',
+            color: AppColors.primary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDailyWord(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [AppColors.primary, AppColors.secondary]),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Word of the Day', style: TextStyle(color: Colors.white70, fontSize: 13)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
+                child: const Text('Tap to quiz', style: TextStyle(color: Colors.white, fontSize: 11)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text('Perseverance', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+          const Text('/pəˌsɪvɪərəns/', style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const SizedBox(height: 8),
+          const Text('noun — Continued effort despite difficulty', style: TextStyle(color: Colors.white, fontSize: 14)),
+          const SizedBox(height: 8),
+          const Text('"Her perseverance finally paid off."', style: TextStyle(color: Colors.white70, fontStyle: FontStyle.italic)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              IconButton(icon: const Icon(Icons.volume_up, color: Colors.white), onPressed: () {}),
+              const Spacer(),
+              TextButton(
+                onPressed: () => context.push('/daily-words'),
+                child: const Text('See all words →', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContinueLearning(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Continue Learning', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 12),
+        _LessonCard(
+          title: 'Present Perfect Tense',
+          subtitle: 'Level 5 • Grammar',
+          progress: 0.6,
+          icon: Icons.menu_book,
+          color: Colors.blue,
+          onTap: () => context.push('/lessons'),
+        ),
+        const SizedBox(height: 8),
+        _LessonCard(
+          title: 'Business Vocabulary',
+          subtitle: 'Level 8 • Vocabulary',
+          progress: 0.3,
+          icon: Icons.work_outline,
+          color: Colors.purple,
+          onTap: () => context.push('/vocabulary'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickAccess(BuildContext context) {
+    final items = [
+      {'icon': Icons.headphones, 'label': 'Listening', 'route': '/listening', 'color': Colors.blue},
+      {'icon': Icons.mic, 'label': 'Speaking', 'route': '/speaking', 'color': Colors.green},
+      {'icon': Icons.edit, 'label': 'Writing', 'route': '/writing', 'color': Colors.orange},
+      {'icon': Icons.chrome_reader_mode, 'label': 'Reading', 'route': '/reading', 'color': Colors.red},
+      {'icon': Icons.spellcheck, 'label': 'Grammar', 'route': '/grammar', 'color': Colors.purple},
+      {'icon': Icons.text_fields, 'label': 'Vocab', 'route': '/vocabulary', 'color': Colors.teal},
+      {'icon': Icons.sports_esports, 'label': 'Games', 'route': '/games', 'color': Colors.pink},
+      {'icon': Icons.smart_toy, 'label': 'AI Tutor', 'route': '/ai-teacher', 'color': AppColors.primary},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Quick Access', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: 4,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          children: items.map((item) => _QuickAccessItem(
+            icon: item['icon'] as IconData,
+            label: item['label'] as String,
+            color: item['color'] as Color,
+            onTap: () => context.push(item['route'] as String),
+          )).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWeeklyProgress() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('This Week', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 100,
+            child: BarChart(
+              BarChartData(
+                barGroups: List.generate(7, (i) => BarChartGroupData(
+                  x: i,
+                  barRods: [BarChartRodData(
+                    toY: [20, 45, 30, 80, 55, 90, 40][i].toDouble(),
+                    color: AppColors.primary,
+                    width: 16,
+                    borderRadius: BorderRadius.circular(4),
+                  )],
+                )),
+                titlesData: FlTitlesData(
+                  bottomTitles: AxisTitles(sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (v, _) => Text(['M','T','W','T','F','S','S'][v.toInt()], style: const TextStyle(fontSize: 11)),
+                  )),
+                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                borderData: FlBorderData(show: false),
+                gridData: FlGridData(show: false),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String icon, value, label;
+  final Color color;
+  const _StatCard({required this.icon, required this.value, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Text(icon, style: const TextStyle(fontSize: 22)),
+          const SizedBox(height: 4),
+          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+          Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+}
+
+class _LessonCard extends StatelessWidget {
+  final String title, subtitle;
+  final double progress;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _LessonCard({required this.title, required this.subtitle, required this.progress, required this.icon, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Row(
+          children: [
+            Container(width: 48, height: 48, decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              child: Icon(icon, color: color)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  const SizedBox(height: 6),
+                  LinearProgressIndicator(value: progress, backgroundColor: Colors.grey[200], valueColor: AlwaysStoppedAnimation(color), borderRadius: BorderRadius.circular(4)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickAccessItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _QuickAccessItem({required this.icon, required this.label, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 52, height: 52,
+            decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
+            child: Icon(icon, color: color, size: 26),
+          ),
+          const SizedBox(height: 6),
+          Text(label, style: const TextStyle(fontSize: 11), textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+}
+
+class _LearnTab extends StatelessWidget {
+  const _LearnTab();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Lessons'), backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: 10,
+        itemBuilder: (context, i) {
+          final levels = ['Alphabet & Phonics','Simple Sentences','Beginner Conversation','Elementary','Intermediate','Upper Intermediate','Advanced','Business English','Academic English','IELTS / TOEFL Prep'];
+          final icons = ['🔤','💬','🗣️','📖','📚','🎓','🏆','💼','🎯','📋'];
+          final colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.teal, Colors.red, Colors.indigo, Colors.brown, Colors.cyan, Colors.amber];
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)]),
+            child: ListTile(
+              contentPadding: const EdgeInsets.all(16),
+              leading: Container(width: 52, height: 52, decoration: BoxDecoration(color: colors[i].withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
+                child: Center(child: Text(icons[i], style: const TextStyle(fontSize: 24)))),
+              title: Text('Level ${i+1}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
+              subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(levels[i], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.black87)),
+                const SizedBox(height: 6),
+                LinearProgressIndicator(value: i == 0 ? 1.0 : i == 1 ? 0.7 : i == 2 ? 0.3 : 0, backgroundColor: Colors.grey[200], valueColor: AlwaysStoppedAnimation(colors[i]), borderRadius: BorderRadius.circular(4)),
+              ]),
+              trailing: i <= 2 ? const Icon(Icons.lock_open, color: Colors.green) : const Icon(Icons.lock, color: Colors.grey),
+              onTap: i <= 2 ? () => context.push('/lessons') : null,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _PracticeTab extends StatelessWidget {
+  const _PracticeTab();
+  @override
+  Widget build(BuildContext context) {
+    final practices = [
+      {'title': 'Speaking Practice', 'icon': Icons.mic, 'color': Colors.green, 'route': '/speaking', 'desc': 'Improve your accent & fluency'},
+      {'title': 'Reading Aloud', 'icon': Icons.chrome_reader_mode, 'color': Colors.blue, 'route': '/reading', 'desc': 'Read & get pronunciation score'},
+      {'title': 'Writing Workshop', 'icon': Icons.edit, 'color': Colors.orange, 'route': '/writing', 'desc': 'AI-powered writing coach'},
+      {'title': 'Listening Skills', 'icon': Icons.headphones, 'color': Colors.purple, 'route': '/listening', 'desc': 'Train your ear with native audio'},
+      {'title': 'Word Games', 'icon': Icons.sports_esports, 'color': Colors.pink, 'route': '/games', 'desc': 'Learn while playing'},
+      {'title': 'AI Conversation', 'icon': Icons.smart_toy, 'color': AppColors.primary, 'route': '/chatbot', 'desc': 'Chat with your AI tutor'},
+    ];
+    return Scaffold(
+      appBar: AppBar(title: const Text('Practice'), backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: practices.length,
+        itemBuilder: (context, i) {
+          final p = practices[i];
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)]),
+            child: ListTile(
+              contentPadding: const EdgeInsets.all(16),
+              leading: Container(width: 52, height: 52, decoration: BoxDecoration(color: (p['color'] as Color).withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
+                child: Icon(p['icon'] as IconData, color: p['color'] as Color, size: 26)),
+              title: Text(p['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(p['desc'] as String, style: const TextStyle(color: Colors.grey)),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+              onTap: () => context.push(p['route'] as String),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ProgressTab extends StatelessWidget {
+  const _ProgressTab();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('My Progress'), backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _ProgressCard('CEFR Level', 'B1 — Intermediate', Icons.star, Colors.amber),
+            const SizedBox(height: 12),
+            _ProgressCard('IELTS Estimate', '5.5 — Upper Intermediate', Icons.school, Colors.blue),
+            const SizedBox(height: 12),
+            _ProgressCard('Words Learned', '847 vocabulary words', Icons.text_fields, Colors.green),
+            const SizedBox(height: 12),
+            _ProgressCard('Hours Studied', '42 hours total', Icons.timer, Colors.purple),
+            const SizedBox(height: 12),
+            _ProgressCard('Current Streak', '7 days 🔥', Icons.local_fire_department, Colors.orange),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => context.push('/progress'),
+              icon: const Icon(Icons.bar_chart),
+              label: const Text('View Detailed Report'),
+              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProgressCard extends StatelessWidget {
+  final String title, value;
+  final IconData icon;
+  final Color color;
+  const _ProgressCard(this.title, this.value, this.icon, this.color);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)]),
+      child: Row(
+        children: [
+          Container(width: 48, height: 48, decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: color)),
+          const SizedBox(width: 16),
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+              Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileTab extends StatelessWidget {
+  const _ProfileTab();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile'), backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(32),
+              decoration: const BoxDecoration(color: AppColors.primary),
+              child: Column(children: [
+                const CircleAvatar(radius: 40, backgroundColor: Colors.white24, child: Icon(Icons.person, size: 40, color: Colors.white)),
+                const SizedBox(height: 12),
+                const Text('Student Name', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                const Text('student@email.com', style: TextStyle(color: Colors.white70)),
+                const SizedBox(height: 8),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
+                  child: const Text('B1 — Intermediate 🏆', style: TextStyle(color: Colors.white))),
+              ]),
+            ),
+            const SizedBox(height: 8),
+            _ProfileTile(Icons.person, 'Edit Profile', () => context.push('/profile')),
+            _ProfileTile(Icons.bar_chart, 'My Progress', () => context.push('/progress')),
+            _ProfileTile(Icons.emoji_events, 'Achievements', () {}),
+            _ProfileTile(Icons.card_membership, 'Certificates', () {}),
+            _ProfileTile(Icons.settings, 'Settings', () {}),
+            _ProfileTile(Icons.help_outline, 'Help & Support', () {}),
+            _ProfileTile(Icons.logout, 'Sign Out', () {}, color: Colors.red),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? color;
+  const _ProfileTile(this.icon, this.label, this.onTap, {this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: color ?? AppColors.primary),
+      title: Text(label, style: TextStyle(color: color)),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
+    );
+  }
+}
