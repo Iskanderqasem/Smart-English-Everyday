@@ -31,6 +31,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -154,7 +155,7 @@ The Amazon rainforest, often called the "lungs of the Earth," produces about 20%
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(16)),
-            child: const Text(passage, style: TextStyle(fontSize: 16, height: 1.8)),
+            child: const Text(passage, style: TextStyle(fontSize: 16, height: 1.8, color: Colors.black87)),
           ),
           const SizedBox(height: 24),
           Center(

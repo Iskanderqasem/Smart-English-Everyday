@@ -20,15 +20,8 @@ class AppValidators {
     if (value == null || value.isEmpty) {
       return AppStrings.fieldRequired;
     }
-    if (value.length < 8) {
-      return AppStrings.passwordTooShort;
-    }
-    final hasUpper = RegExp(r'[A-Z]').hasMatch(value);
-    final hasLower = RegExp(r'[a-z]').hasMatch(value);
-    final hasDigit = RegExp(r'\d').hasMatch(value);
-    final hasSpecial = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value);
-    if (!hasUpper || !hasLower || !hasDigit || !hasSpecial) {
-      return AppStrings.passwordWeak;
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters';
     }
     return null;
   }
