@@ -13,16 +13,52 @@ class _GrammarPageState extends State<GrammarPage> {
   final _categories = ['All', 'Tenses', 'Modal Verbs', 'Passive Voice', 'Conditionals', 'Prepositions', 'Articles', 'Phrasal Verbs'];
 
   final _topics = [
+    // Tenses
     {'title': 'Simple Present', 'category': 'Tenses', 'level': 'A1', 'lessons': 5, 'completed': 5, 'icon': '📅'},
     {'title': 'Simple Past', 'category': 'Tenses', 'level': 'A1', 'lessons': 5, 'completed': 5, 'icon': '⏪'},
+    {'title': 'Present Continuous', 'category': 'Tenses', 'level': 'A2', 'lessons': 4, 'completed': 4, 'icon': '🔁'},
+    {'title': 'Past Continuous', 'category': 'Tenses', 'level': 'A2', 'lessons': 4, 'completed': 2, 'icon': '⌛'},
     {'title': 'Present Perfect', 'category': 'Tenses', 'level': 'B1', 'lessons': 6, 'completed': 3, 'icon': '✅'},
-    {'title': 'Future Tenses', 'category': 'Tenses', 'level': 'B1', 'lessons': 5, 'completed': 0, 'icon': '🔮'},
-    {'title': 'Can, Could, May', 'category': 'Modal Verbs', 'level': 'A2', 'lessons': 4, 'completed': 4, 'icon': '💪'},
-    {'title': 'Must, Should, Would', 'category': 'Modal Verbs', 'level': 'B1', 'lessons': 4, 'completed': 1, 'icon': '🤔'},
-    {'title': 'Passive Voice', 'category': 'Passive Voice', 'level': 'B1', 'lessons': 5, 'completed': 0, 'icon': '🔄'},
-    {'title': 'First Conditional', 'category': 'Conditionals', 'level': 'B1', 'lessons': 3, 'completed': 0, 'icon': 'if'},
-    {'title': 'Phrasal Verbs', 'category': 'Phrasal Verbs', 'level': 'B1', 'lessons': 8, 'completed': 0, 'icon': '🔤'},
-    {'title': 'A, An, The', 'category': 'Articles', 'level': 'A2', 'lessons': 4, 'completed': 4, 'icon': '📌'},
+    {'title': 'Past Perfect', 'category': 'Tenses', 'level': 'B2', 'lessons': 4, 'completed': 0, 'icon': '⏮️'},
+    {'title': 'Future with Will', 'category': 'Tenses', 'level': 'A2', 'lessons': 4, 'completed': 4, 'icon': '🔮'},
+    {'title': 'Future with Going To', 'category': 'Tenses', 'level': 'A2', 'lessons': 3, 'completed': 3, 'icon': '🗓️'},
+    {'title': 'Future Perfect', 'category': 'Tenses', 'level': 'C1', 'lessons': 3, 'completed': 0, 'icon': '🏁'},
+    // Modal Verbs
+    {'title': 'Can & Could', 'category': 'Modal Verbs', 'level': 'A1', 'lessons': 4, 'completed': 4, 'icon': '💪'},
+    {'title': 'May & Might', 'category': 'Modal Verbs', 'level': 'A2', 'lessons': 3, 'completed': 3, 'icon': '🤷'},
+    {'title': 'Must & Have To', 'category': 'Modal Verbs', 'level': 'A2', 'lessons': 4, 'completed': 2, 'icon': '❗'},
+    {'title': 'Should & Ought To', 'category': 'Modal Verbs', 'level': 'B1', 'lessons': 4, 'completed': 1, 'icon': '🤔'},
+    {'title': 'Would & Used To', 'category': 'Modal Verbs', 'level': 'B1', 'lessons': 4, 'completed': 0, 'icon': '🔂'},
+    {'title': 'Modal Perfect', 'category': 'Modal Verbs', 'level': 'B2', 'lessons': 4, 'completed': 0, 'icon': '🎯'},
+    // Passive Voice
+    {'title': 'Passive: Present', 'category': 'Passive Voice', 'level': 'B1', 'lessons': 4, 'completed': 0, 'icon': '🔄'},
+    {'title': 'Passive: Past', 'category': 'Passive Voice', 'level': 'B1', 'lessons': 4, 'completed': 0, 'icon': '📜'},
+    {'title': 'Passive: Future', 'category': 'Passive Voice', 'level': 'B2', 'lessons': 3, 'completed': 0, 'icon': '🔁'},
+    {'title': 'Passive with Modals', 'category': 'Passive Voice', 'level': 'B2', 'lessons': 4, 'completed': 0, 'icon': '🎭'},
+    {'title': 'Causative Have/Get', 'category': 'Passive Voice', 'level': 'C1', 'lessons': 3, 'completed': 0, 'icon': '🛠️'},
+    // Conditionals
+    {'title': 'Zero Conditional', 'category': 'Conditionals', 'level': 'A2', 'lessons': 3, 'completed': 3, 'icon': '🌡️'},
+    {'title': 'First Conditional', 'category': 'Conditionals', 'level': 'B1', 'lessons': 4, 'completed': 0, 'icon': '1️⃣'},
+    {'title': 'Second Conditional', 'category': 'Conditionals', 'level': 'B1', 'lessons': 4, 'completed': 0, 'icon': '2️⃣'},
+    {'title': 'Third Conditional', 'category': 'Conditionals', 'level': 'B2', 'lessons': 4, 'completed': 0, 'icon': '3️⃣'},
+    {'title': 'Mixed Conditionals', 'category': 'Conditionals', 'level': 'C1', 'lessons': 3, 'completed': 0, 'icon': '🔀'},
+    // Prepositions
+    {'title': 'Prepositions of Place', 'category': 'Prepositions', 'level': 'A1', 'lessons': 4, 'completed': 4, 'icon': '📍'},
+    {'title': 'Prepositions of Time', 'category': 'Prepositions', 'level': 'A1', 'lessons': 4, 'completed': 4, 'icon': '🕐'},
+    {'title': 'In / On / At', 'category': 'Prepositions', 'level': 'A2', 'lessons': 5, 'completed': 3, 'icon': '📦'},
+    {'title': 'Prepositions of Movement', 'category': 'Prepositions', 'level': 'A2', 'lessons': 3, 'completed': 0, 'icon': '➡️'},
+    {'title': 'Dependent Prepositions', 'category': 'Prepositions', 'level': 'B2', 'lessons': 5, 'completed': 0, 'icon': '🔗'},
+    // Articles
+    {'title': 'A & An (Indefinite)', 'category': 'Articles', 'level': 'A1', 'lessons': 4, 'completed': 4, 'icon': '📌'},
+    {'title': 'The (Definite)', 'category': 'Articles', 'level': 'A1', 'lessons': 4, 'completed': 4, 'icon': '☑️'},
+    {'title': 'Zero Article', 'category': 'Articles', 'level': 'B1', 'lessons': 3, 'completed': 1, 'icon': '0️⃣'},
+    {'title': 'Articles with Proper Nouns', 'category': 'Articles', 'level': 'B2', 'lessons': 3, 'completed': 0, 'icon': '🌍'},
+    // Phrasal Verbs
+    {'title': 'Phrasal Verbs: Movement', 'category': 'Phrasal Verbs', 'level': 'A2', 'lessons': 5, 'completed': 5, 'icon': '🚶'},
+    {'title': 'Phrasal Verbs: Relationships', 'category': 'Phrasal Verbs', 'level': 'B1', 'lessons': 5, 'completed': 2, 'icon': '🤝'},
+    {'title': 'Phrasal Verbs: Work & Study', 'category': 'Phrasal Verbs', 'level': 'B1', 'lessons': 5, 'completed': 0, 'icon': '💼'},
+    {'title': 'Separable vs Inseparable', 'category': 'Phrasal Verbs', 'level': 'B2', 'lessons': 4, 'completed': 0, 'icon': '✂️'},
+    {'title': 'Advanced Phrasal Verbs', 'category': 'Phrasal Verbs', 'level': 'C1', 'lessons': 6, 'completed': 0, 'icon': '🎓'},
   ];
 
   List<Map<String, dynamic>> get _filtered => _selectedCategory == 'All' ? _topics : _topics.where((t) => t['category'] == _selectedCategory).toList();
