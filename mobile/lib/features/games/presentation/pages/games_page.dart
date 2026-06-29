@@ -59,23 +59,32 @@ class GamesPage extends StatelessWidget {
   Widget _buildDailyChallengeBanner(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(colors: [AppColors.primary, AppColors.secondary]),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text('⚡', style: TextStyle(fontSize: 36)),
-          const SizedBox(width: 16),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Daily Challenge', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-            const Text('Complete today\'s challenge for 50 XP bonus!', style: TextStyle(color: Colors.white70, fontSize: 13)),
-          ])),
+          const Text('⚡', style: TextStyle(fontSize: 32)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Daily Challenge', overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                const SizedBox(height: 2),
+                const Text('Complete today for 50 XP bonus!', overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white70, fontSize: 12)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
           ElevatedButton(
             onPressed: () => context.push('/games/daily'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: AppColors.primary),
-            child: const Text('Play'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8)),
+            child: const Text('Play', style: TextStyle(fontSize: 13)),
           ),
         ],
       ),
