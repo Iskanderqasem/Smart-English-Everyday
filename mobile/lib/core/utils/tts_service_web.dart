@@ -4,7 +4,7 @@ import 'dart:js' as js;
 class TtsService {
   static bool get isSpeaking {
     try {
-      return js.context['_SEE_TTS']?.callMethod('isSpeaking', []) as bool? ?? false;
+      return js.context['speechSynthesis']?['speaking'] as bool? ?? false;
     } catch (_) {
       return false;
     }
@@ -16,18 +16,49 @@ class TtsService {
       double pitch = 1.0,
       void Function()? onEnd}) {
     try {
-      final tts = js.context['_SEE_TTS'];
-      if (tts == null) return;
-      if (onEnd != null) {
-        tts.callMethod('setOnEnd', [js.allowInterop(onEnd)]);
+      final synth = js.context['speechSynthesis'];
+      if (synth == null) {
+        onEnd?.call();
+        return;
       }
-      tts.callMethod('speak', [text, lang, rate]);
-    } catch (_) {}
+
+      synth.callMethod('cancel', []);
+
+      final ctor = js.context['SpeechSynthesisUtterance'];
+      if (ctor == null) {
+        onEnd?.call();
+        return;
+      }
+
+      final u = js.JsObject(ctor as js.JsFunction, [text]);
+      u['lang'] = lang;
+      u['rate'] = rate;
+      u['pitch'] = pitch;
+
+      if (onEnd != null) {
+        u['onend'] = js.allowInterop((_) => onEnd());
+        u['onerror'] = js.allowInterop((_) => onEnd());
+      }
+
+      synth.callMethod('speak', [u]);
+
+      // Chrome Android: resume if synthesis is paused (background tab bug)
+      js.context.callMethod('setTimeout', [
+        js.allowInterop(() {
+          try {
+            if (synth['paused'] == true) synth.callMethod('resume', []);
+          } catch (_) {}
+        }),
+        100,
+      ]);
+    } catch (_) {
+      onEnd?.call();
+    }
   }
 
   static void stop() {
     try {
-      js.context['_SEE_TTS']?.callMethod('stop', []);
+      js.context['speechSynthesis']?.callMethod('cancel', []);
     } catch (_) {}
   }
 }
