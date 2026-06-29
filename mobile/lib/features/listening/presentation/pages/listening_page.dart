@@ -23,7 +23,7 @@ class _ListeningPageState extends State<ListeningPage> {
   double _progress = 0.0;
   int _elapsed = 0;
 
-  final _accents = ['All', 'British', 'American', 'Australian', 'Canadian'];
+  final _accents = ['All', 'British', 'American', 'Australian', 'Canadian', 'New Zealand'];
 
   final _lessons = <Map<String, dynamic>>[
     {
@@ -94,6 +94,20 @@ class _ListeningPageState extends State<ListeningPage> {
         {'q': 'What health problems are linked to poor sleep?', 'opts': ['Only mental health problems', 'Only physical problems', 'Heart disease, diabetes and mental health problems', 'No serious problems'], 'a': 2},
         {'q': 'How long before bed should you avoid screens?', 'opts': ['15 minutes', '30 minutes', 'At least 1 hour', '2 hours'], 'a': 2},
         {'q': 'What kind of light from screens affects sleep?', 'opts': ['Red light', 'Green light', 'Yellow light', 'Blue light'], 'a': 3},
+      ],
+    },
+    {
+      'title': 'Life in New Zealand',
+      'accent': 'New Zealand',
+      'accentCode': 'en-NZ',
+      'level': 'B1',
+      'topic': 'Culture',
+      'text': 'Kia ora and welcome! New Zealand is a small island nation in the South Pacific, known for its stunning landscapes and friendly people. The country has two main islands, the North Island and the South Island, with a total population of about five million people. Māori culture is an essential part of New Zealand identity. The haka, a traditional Māori dance, is performed at important ceremonies and by the famous All Blacks rugby team. New Zealand was the first country in the world to give women the right to vote, back in eighteen ninety three. The country is also famous for its outdoor lifestyle, including hiking, called tramping by locals, surfing, and bungee jumping, which was invented here.',
+      'questions': [
+        {'q': 'What is the population of New Zealand?', 'opts': ['About 2 million', 'About 5 million', 'About 10 million', 'About 20 million'], 'a': 1},
+        {'q': 'What is a haka?', 'opts': ['A Māori food', 'A type of weather', 'A traditional Māori dance', 'A New Zealand sport'], 'a': 2},
+        {'q': 'When did NZ give women the right to vote?', 'opts': ['1850', '1893', '1920', '1945'], 'a': 1},
+        {'q': 'What do New Zealanders call hiking?', 'opts': ['Walking', 'Trekking', 'Tramping', 'Roaming'], 'a': 2},
       ],
     },
   ];

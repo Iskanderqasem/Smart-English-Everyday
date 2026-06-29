@@ -35,17 +35,18 @@ class SpeechRecognitionService {
 
       _recognition['onresult'] = js.allowInterop((dynamic event) {
         try {
-          final results = event['results'] as js.JsObject;
-          final len = results['length'] as int;
+          final results = event['results'];
+          final len = (results['length'] as num).toInt();
           final buffer = StringBuffer();
           bool finalFlag = false;
           for (int i = 0; i < len; i++) {
-            final r = results.callMethod('item', [i]) as js.JsObject;
-            final alt = r.callMethod('item', [0]) as js.JsObject;
-            buffer.write(alt['transcript'] as String? ?? '');
-            finalFlag = r['isFinal'] as bool? ?? false;
+            final r = results[i];
+            final alt = r[0];
+            final t = alt['transcript'];
+            if (t != null) buffer.write(t.toString());
+            finalFlag = r['isFinal'] == true;
           }
-          onResult(buffer.toString(), finalFlag);
+          if (buffer.isNotEmpty) onResult(buffer.toString(), finalFlag);
         } catch (_) {}
       });
 
