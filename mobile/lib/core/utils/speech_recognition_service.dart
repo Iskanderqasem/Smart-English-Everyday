@@ -19,7 +19,7 @@ class SpeechRecognitionService {
   static void start({
     required OnResult onResult,
     required OnError onError,
-    VoidCallback? onEnd,
+    void Function()? onEnd,
     String lang = 'en-US',
   }) {
     try {
@@ -87,17 +87,14 @@ class SpeakingAnalyzer {
     final uniqueWords = words.toSet().length;
     final minutes = durationSeconds / 60.0;
     final wpm = minutes > 0 ? wordCount / minutes : 0.0;
-
     final sentences = transcript.split(RegExp(r'[.!?]+'));
     final sentenceCount = sentences.where((s) => s.trim().isNotEmpty).length;
     final avgWordsPerSentence = sentenceCount > 0 ? wordCount / sentenceCount : 0.0;
-
     final promptKeywords = prompt.toLowerCase()
         .split(RegExp(r'\s+'))
         .where((w) => w.length > 4)
         .toSet();
-    final relevantHits =
-        words.toSet().intersection(promptKeywords).length;
+    final relevantHits = words.toSet().intersection(promptKeywords).length;
 
     final fluency = _clamp(_scoreWpm(wpm), 30, 98);
     final diversity = uniqueWords / wordCount;
@@ -110,22 +107,13 @@ class SpeakingAnalyzer {
             (sentenceCount >= 3 ? 5 : 0),
         30, 97);
     final pronunciation = _clamp(((fluency + confidence) ~/ 2) + 3, 35, 97);
-
-    final overall =
-        ((pronunciation + fluency + grammar + vocabulary + confidence + naturalness) / 6)
-            .round();
+    final overall = ((pronunciation + fluency + grammar + vocabulary + confidence + naturalness) / 6).round();
 
     return {
-      'overall': overall,
-      'pronunciation': pronunciation,
-      'fluency': fluency,
-      'grammar': grammar,
-      'vocabulary': vocabulary,
-      'confidence': confidence,
-      'naturalness': naturalness,
-      'wordCount': wordCount,
-      'wordsPerMinute': wpm.round(),
-      'uniqueWords': uniqueWords,
+      'overall': overall, 'pronunciation': pronunciation, 'fluency': fluency,
+      'grammar': grammar, 'vocabulary': vocabulary, 'confidence': confidence,
+      'naturalness': naturalness, 'wordCount': wordCount,
+      'wordsPerMinute': wpm.round(), 'uniqueWords': uniqueWords,
       'sentenceCount': sentenceCount,
     };
   }
@@ -155,57 +143,45 @@ class SpeakingAnalyzer {
     final items = <Map<String, String>>[];
     final overall = scores['overall'] as int;
     final wpm = scores['wordsPerMinute'] as int;
-    final fluency = scores['fluency'] as int;
     final grammar = scores['grammar'] as int;
     final vocabulary = scores['vocabulary'] as int;
     final wordCount = scores['wordCount'] as int;
     final sentences = scores['sentenceCount'] as int;
 
-    // Overall
     if (overall >= 80) {
-      items.add({'type': 'good', 'text': 'Excellent performance! Your speaking was clear, confident, and well-structured.'});
+      items.add({'type': 'good', 'text': 'Excellent performance! Clear, confident and well-structured.'});
     } else if (overall >= 60) {
       items.add({'type': 'good', 'text': 'Good effort! Your speaking is developing well. Keep practising daily.'});
     } else {
-      items.add({'type': 'tip', 'text': 'Keep going — every session improves your speaking. Focus on full sentences.'});
+      items.add({'type': 'tip', 'text': 'Keep going — every session helps. Focus on speaking in full sentences.'});
     }
 
-    // Pace
-    if (wpm < 60) {
-      items.add({'type': 'warn', 'text': 'You spoke quite slowly ($wpm wpm). Try to aim for 100–140 words per minute.'});
+    if (wpm > 0 && wpm < 60) {
+      items.add({'type': 'warn', 'text': 'You spoke quite slowly ($wpm wpm). Try to aim for 100-140 words per minute.'});
     } else if (wpm > 170) {
-      items.add({'type': 'warn', 'text': 'You spoke very fast ($wpm wpm). Slow down a little and pause between ideas.'});
+      items.add({'type': 'warn', 'text': 'You spoke very fast ($wpm wpm). Slow down and pause between ideas.'});
     } else if (wpm >= 90 && wpm <= 150) {
       items.add({'type': 'good', 'text': 'Your pace was natural and comfortable ($wpm wpm). Well done!'});
     }
 
-    // Fluency
-    if (fluency < 55) {
-      items.add({'type': 'tip', 'text': 'Practise speaking for longer stretches without stopping to build fluency.'});
-    }
-
-    // Grammar
     if (grammar < 60) {
       items.add({'type': 'warn', 'text': 'Focus on complete sentences — include a subject and verb in every idea.'});
     } else if (grammar >= 80) {
-      items.add({'type': 'good', 'text': 'Great sentence structure! You used varied and well-formed sentences.'});
+      items.add({'type': 'good', 'text': 'Great sentence structure! Varied and well-formed sentences.'});
     }
 
-    // Vocabulary
     if (vocabulary < 55) {
       items.add({'type': 'tip', 'text': 'Review topic vocabulary before speaking. Try to use a wider range of words.'});
     } else if (vocabulary >= 80) {
-      items.add({'type': 'good', 'text': 'Impressive vocabulary range! You used a diverse and relevant set of words.'});
+      items.add({'type': 'good', 'text': 'Impressive vocabulary range! You used diverse and relevant words.'});
     }
 
-    // Length
     if (wordCount < 15) {
-      items.add({'type': 'warn', 'text': 'You only said $wordCount words. Try to speak for the full time — longer responses show more ability.'});
+      items.add({'type': 'warn', 'text': 'You only said $wordCount words. Try to speak for the full time.'});
     } else if (wordCount >= 80) {
       items.add({'type': 'good', 'text': 'Great response length! You spoke confidently and at length.'});
     }
 
-    // Sentences
     if (sentences == 1) {
       items.add({'type': 'tip', 'text': 'Try to break your speech into multiple sentences with different ideas.'});
     }
