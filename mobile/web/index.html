@@ -107,6 +107,20 @@
     })();
   </script>
 
+  <!-- TEMP DEBUG: Tap this button to test if your browser plays audio at all -->
+  <button id="_audio_test_btn"
+    onclick="window._SEE_TTS.speak('Audio test. Your browser speech is working correctly.','en-US',0.9)"
+    style="position:fixed;bottom:16px;right:16px;z-index:99999;background:#1565C0;color:#fff;border:none;border-radius:24px;padding:10px 18px;font-size:13px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:none">
+    Test Audio
+  </button>
+  <script>
+    // Show the test button after app has had time to load
+    setTimeout(function() {
+      var btn = document.getElementById('_audio_test_btn');
+      if (btn) btn.style.display = 'block';
+    }, 4000);
+  </script>
+
   <script src="flutter.js" defer></script>
   <script>
     window.addEventListener('load', function(ev) {
