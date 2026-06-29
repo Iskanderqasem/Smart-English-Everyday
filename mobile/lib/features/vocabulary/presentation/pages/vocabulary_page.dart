@@ -578,7 +578,7 @@ class _FlashCardBack extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(12)),
-          child: Text('"${word['example']}"', style: const TextStyle(color: Colors.white80, fontStyle: FontStyle.italic, fontSize: 14, height: 1.5), textAlign: TextAlign.center),
+          child: Text('"${word['example']}"', style: const TextStyle(color: Colors.white70, fontStyle: FontStyle.italic, fontSize: 14, height: 1.5), textAlign: TextAlign.center),
         ),
         const SizedBox(height: 16),
         const Text('Tap card to flip back', style: TextStyle(color: Colors.white38, fontSize: 12)),

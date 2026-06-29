@@ -512,9 +512,6 @@ class _SpeakingPageState extends State<SpeakingPage>
       ]),
     );
   }
-
-  String _formatTime(int seconds) =>
-      '${(seconds ~/ 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
 }
 
 class _StatChip extends StatelessWidget {
