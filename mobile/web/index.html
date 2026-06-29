@@ -45,6 +45,13 @@
 
   <script src="flutter.js" defer></script>
   <script>
+    // Register service worker so Chrome shows "Add to Home Screen" install prompt
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('flutter_service_worker.js').catch(function() {});
+      });
+    }
+
     window.addEventListener('load', function(ev) {
       _flutter.loader.loadEntrypoint({
         onEntrypointLoaded: async function(engineInitializer) {
