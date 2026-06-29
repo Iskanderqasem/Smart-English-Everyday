@@ -9,6 +9,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Smart English Everyday">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Prevent browser caching stale versions -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
@@ -37,21 +41,74 @@
 </head>
 <body>
   <div id="loading">
-    <div id="loading-logo">🌍</div>
+    <div id="loading-logo">&#127758;</div>
     <div id="loading-title">Smart English Everyday</div>
     <div id="loading-sub">Smart English Learning</div>
     <div id="loading-bar"><div id="loading-bar-fill"></div></div>
   </div>
 
+  <!-- ============================================================
+       TTS helper — defined here so it always runs in the page
+       context and is available the moment Flutter calls it.
+       Works on Chrome, Firefox, Safari, Edge, Android, iOS.
+       ============================================================ -->
+  <script>
+    (function() {
+      var _onEndCb = null;
+
+      // Unregister any old service workers that may be caching stale files
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(r) { r.unregister(); });
+        });
+      }
+
+      window._SEE_TTS = {
+        speak: function(text, lang, rate) {
+          try {
+            var synth = window.speechSynthesis;
+            if (!synth) return;
+            synth.cancel();
+            _onEndCb = null;
+
+            var u = new SpeechSynthesisUtterance(text);
+            u.lang   = lang  || 'en-US';
+            u.rate   = parseFloat(rate) || 0.85;
+            u.pitch  = 1.0;
+
+            u.onend   = function() { if (_onEndCb) { _onEndCb(); _onEndCb = null; } };
+            u.onerror = function() { if (_onEndCb) { _onEndCb(); _onEndCb = null; } };
+
+            synth.speak(u);
+
+            // Chrome Android sometimes pauses synthesis in background tabs
+            if (synth.paused) synth.resume();
+
+            // Safety: if onend never fires (some mobile browsers), call back after
+            // estimated time so the UI doesn't get stuck
+            var wordCount = text.split(' ').length;
+            var estimatedMs = Math.max(3000, (wordCount / (parseFloat(rate) || 0.85)) * 700);
+            setTimeout(function() {
+              if (_onEndCb) { _onEndCb(); _onEndCb = null; }
+            }, estimatedMs);
+          } catch(e) {}
+        },
+
+        setOnEnd: function(cb) { _onEndCb = cb; },
+
+        stop: function() {
+          try { window.speechSynthesis.cancel(); _onEndCb = null; } catch(e) {}
+        },
+
+        isSpeaking: function() {
+          try { return window.speechSynthesis.speaking; } catch(e) { return false; }
+        }
+      };
+    })();
+  </script>
+
   <script src="flutter.js" defer></script>
   <script>
-    // Register service worker so Chrome shows "Add to Home Screen" install prompt
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('flutter_service_worker.js').catch(function() {});
-      });
-    }
-
     window.addEventListener('load', function(ev) {
       _flutter.loader.loadEntrypoint({
         onEntrypointLoaded: async function(engineInitializer) {
