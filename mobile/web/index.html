@@ -107,18 +107,19 @@
     })();
   </script>
 
-  <!-- TEMP DEBUG: Tap this button to test if your browser plays audio at all -->
-  <button id="_audio_test_btn"
-    onclick="window._SEE_TTS.speak('Audio test. Your browser speech is working correctly.','en-US',0.9)"
-    style="position:fixed;bottom:16px;right:16px;z-index:99999;background:#1565C0;color:#fff;border:none;border-radius:24px;padding:10px 18px;font-size:13px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:none">
-    Test Audio
-  </button>
+  <!-- Version stamp + audio test button -->
+  <div id="_ver_bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:#1b5e20;color:#fff;font-size:12px;text-align:center;padding:4px;font-family:sans-serif">
+    v29-Jun-2025 &nbsp;|&nbsp;
+    <span onclick="window._SEE_TTS.speak('Audio test. Speech is working correctly.','en-US',0.9)"
+      style="cursor:pointer;text-decoration:underline">Tap here to test audio</span>
+  </div>
   <script>
-    // Show the test button after app has had time to load
     setTimeout(function() {
-      var btn = document.getElementById('_audio_test_btn');
-      if (btn) btn.style.display = 'block';
-    }, 4000);
+      var bar = document.getElementById('_ver_bar');
+      if (bar) bar.style.display = 'block';
+      // Auto-hide after 12s so it doesn't clutter the UI
+      setTimeout(function() { if (bar) bar.style.display = 'none'; }, 12000);
+    }, 3000);
   </script>
 
   <script src="flutter.js" defer></script>
