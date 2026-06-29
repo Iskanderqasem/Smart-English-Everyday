@@ -5,12 +5,11 @@ typedef OnResult = void Function(String transcript, bool isFinal);
 typedef OnError = void Function(String error);
 
 class SpeechRecognitionService {
-  static dynamic _recognition;
-
   static bool get isAvailable {
     try {
-      return js.context.hasProperty('SpeechRecognition') ||
-          js.context.hasProperty('webkitSpeechRecognition');
+      final stt = js.context['_SEE_STT'];
+      if (stt == null) return false;
+      return stt.callMethod('isAvailable', []) == true;
     } catch (_) {
       return false;
     }
@@ -23,40 +22,21 @@ class SpeechRecognitionService {
     String lang = 'en-US',
   }) {
     try {
-      final cls = js.context.hasProperty('SpeechRecognition')
-          ? js.context['SpeechRecognition']
-          : js.context['webkitSpeechRecognition'];
+      final stt = js.context['_SEE_STT'];
+      if (stt == null) { onError('not-supported'); return; }
 
-      _recognition = js.JsObject(cls as js.JsFunction);
-      _recognition['continuous'] = true;
-      _recognition['interimResults'] = true;
-      _recognition['lang'] = lang;
-      _recognition['maxAlternatives'] = 1;
-
-      _recognition['onresult'] = js.allowInterop((dynamic event) {
-        try {
-          final results = event['results'];
-          final len = (results['length'] as num).toInt();
-          final buffer = StringBuffer();
-          bool finalFlag = false;
-          for (int i = 0; i < len; i++) {
-            final r = results[i];
-            final alt = r[0];
-            final t = alt['transcript'];
-            if (t != null) buffer.write(t.toString());
-            finalFlag = r['isFinal'] == true;
-          }
-          if (buffer.isNotEmpty) onResult(buffer.toString(), finalFlag);
-        } catch (_) {}
-      });
-
-      _recognition['onerror'] = js.allowInterop((dynamic event) {
-        onError(event['error']?.toString() ?? 'unknown');
-      });
-
-      _recognition['onend'] = js.allowInterop((_) => onEnd?.call());
-
-      _recognition.callMethod('start', []);
+      stt.callMethod('start', [
+        lang,
+        js.allowInterop((String transcript, bool isFinal) {
+          onResult(transcript, isFinal);
+        }),
+        js.allowInterop((String error) {
+          onError(error);
+        }),
+        js.allowInterop(() {
+          onEnd?.call();
+        }),
+      ]);
     } catch (e) {
       onError(e.toString());
     }
@@ -64,7 +44,7 @@ class SpeechRecognitionService {
 
   static void stop() {
     try {
-      _recognition?.callMethod('stop', []);
+      js.context['_SEE_STT']?.callMethod('stop', []);
     } catch (_) {}
   }
 }

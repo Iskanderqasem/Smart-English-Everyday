@@ -104,6 +104,64 @@
           try { return window.speechSynthesis.speaking; } catch(e) { return false; }
         }
       };
+
+      // Speech-to-Text helper — wraps Web Speech API in plain JS so Dart
+      // doesn't need to parse SpeechRecognitionResultList via dart:js.
+      (function() {
+        var _rec = null;
+        var _running = false;
+
+        window._SEE_STT = {
+          isAvailable: function() {
+            return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+          },
+
+          start: function(lang, onResult, onError, onEnd) {
+            try {
+              var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+              if (!SR) { onError('not-supported'); return; }
+              if (_rec) { try { _rec.abort(); } catch(e) {} }
+
+              _rec = new SR();
+              _rec.continuous = true;
+              _rec.interimResults = true;
+              _rec.lang = lang || 'en-US';
+              _rec.maxAlternatives = 1;
+              _running = true;
+
+              _rec.onresult = function(e) {
+                try {
+                  var buf = '';
+                  var isFinal = false;
+                  for (var i = 0; i < e.results.length; i++) {
+                    buf += e.results[i][0].transcript;
+                    isFinal = e.results[i].isFinal;
+                  }
+                  if (buf) onResult(buf, isFinal);
+                } catch(ex) {}
+              };
+
+              _rec.onerror = function(e) {
+                onError(e.error || 'unknown');
+              };
+
+              _rec.onend = function() {
+                if (_running) onEnd();
+              };
+
+              _rec.start();
+            } catch(e) {
+              onError(e.message || 'start-failed');
+            }
+          },
+
+          stop: function() {
+            _running = false;
+            try { if (_rec) _rec.stop(); } catch(e) {}
+          }
+        };
+      })();
+
     })();
   </script>
 
