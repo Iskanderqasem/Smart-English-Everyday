@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/speech_recognition_service.dart';
 
 class AiTeacherPage extends StatefulWidget {
   const AiTeacherPage({super.key});
@@ -11,6 +12,7 @@ class _AiTeacherPageState extends State<AiTeacherPage> {
   final _msgCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
   bool _isTyping = false;
+  bool _isListening = false;
 
   final List<Map<String, dynamic>> _messages = [
     {'role': 'ai', 'text': 'Hello! I\'m your AI English Teacher 👋 I\'m here 24/7 to help you with grammar, vocabulary, pronunciation, writing, speaking, and anything else you need. What would you like to learn today?'},
@@ -88,7 +90,13 @@ class _AiTeacherPageState extends State<AiTeacherPage> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, -4))]),
       child: Row(children: [
-        IconButton(icon: const Icon(Icons.mic_outlined, color: AppColors.primary), onPressed: () {}),
+        IconButton(
+          icon: Icon(
+            _isListening ? Icons.mic : Icons.mic_outlined,
+            color: _isListening ? Colors.red : AppColors.primary,
+          ),
+          onPressed: _toggleMic,
+        ),
         Expanded(
           child: TextField(
             controller: _msgCtrl,
@@ -123,6 +131,41 @@ class _AiTeacherPageState extends State<AiTeacherPage> {
           ...List.generate(3, (i) => Container(width: 8, height: 8, margin: EdgeInsets.only(right: i < 2 ? 4 : 0), decoration: BoxDecoration(color: Colors.grey, shape: BoxShape.circle))),
         ]),
       ),
+    );
+  }
+
+  void _toggleMic() {
+    if (_isListening) {
+      SpeechRecognitionService.stop();
+      setState(() => _isListening = false);
+      return;
+    }
+    if (!SpeechRecognitionService.isAvailable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Microphone not available on this device/browser.'), behavior: SnackBarBehavior.floating),
+      );
+      return;
+    }
+    setState(() { _isListening = true; _msgCtrl.clear(); });
+    SpeechRecognitionService.start(
+      lang: 'en-US',
+      onResult: (transcript, isFinal) {
+        _msgCtrl.text = transcript;
+        if (isFinal) {
+          SpeechRecognitionService.stop();
+          setState(() => _isListening = false);
+          if (transcript.trim().isNotEmpty) _sendMessage(transcript.trim());
+        }
+      },
+      onError: (err) {
+        setState(() => _isListening = false);
+        if (err != 'no-speech' && err != 'aborted') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Mic error: $err'), behavior: SnackBarBehavior.floating),
+          );
+        }
+      },
+      onEnd: () => setState(() => _isListening = false),
     );
   }
 
