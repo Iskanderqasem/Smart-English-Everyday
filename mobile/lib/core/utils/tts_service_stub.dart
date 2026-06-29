@@ -2,6 +2,11 @@
 class TtsService {
   static bool get isSpeaking => false;
   static void speak(String text,
-      {String lang = 'en-US', double rate = 0.85, double pitch = 1.0}) {}
+      {String lang = 'en-US',
+      double rate = 0.85,
+      double pitch = 1.0,
+      void Function()? onEnd}) {
+    onEnd?.call();
+  }
   static void stop() {}
 }

@@ -187,8 +187,7 @@ class _ReadingPageState extends State<ReadingPage> {
 
   void _speak(String text) {
     setState(() => _speaking = true);
-    TtsService.speak(text, lang: 'en-US', rate: 0.8);
-    Future.delayed(const Duration(seconds: 2), () {
+    TtsService.speak(text, lang: 'en-US', rate: 0.8, onEnd: () {
       if (mounted) setState(() => _speaking = false);
     });
   }

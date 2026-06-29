@@ -104,6 +104,17 @@ class _SpeakingPageState extends State<SpeakingPage>
       _micGranted = false;
     });
 
+    _startListening();
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) { t.cancel(); return; }
+      setState(() => _elapsed++);
+      final maxSec = _topics[_selectedTopic]['maxSeconds'] as int;
+      if (_elapsed >= maxSec) _stopRecording();
+    });
+  }
+
+  void _startListening() {
     SpeechRecognitionService.start(
       lang: 'en-US',
       onResult: (transcript, isFinal) {
@@ -118,39 +129,26 @@ class _SpeakingPageState extends State<SpeakingPage>
         if (!mounted) return;
         if (error == 'not-allowed') {
           setState(() {
-            _errorMsg = 'Microphone access was denied.\nPlease allow microphone access in your browser settings and try again.';
+            _errorMsg =
+                'Microphone access was denied.\nOpen your browser address bar, tap the lock/info icon, and allow the Microphone permission. Then try again.';
             _isRecording = false;
           });
           _timer?.cancel();
-        } else if (error != 'no-speech') {
-          setState(() => _errorMsg = 'Recognition error: $error');
+        } else if (error == 'network') {
+          setState(() => _errorMsg =
+              'Network error — speech recognition needs an internet connection. Please check your connection.');
+        } else if (error != 'no-speech' && error != 'aborted') {
+          setState(() => _errorMsg = 'Microphone error: $error');
         }
       },
       onEnd: () {
-        if (!mounted) return;
-        if (_isRecording) {
-          SpeechRecognitionService.start(
-            lang: 'en-US',
-            onResult: (t, f) {
-              if (!mounted) return;
-              setState(() {
-                _micGranted = true;
-                _liveTranscript = t;
-                if (f) _finalTranscript = t;
-              });
-            },
-            onError: (_) {},
-          );
-        }
+        // Browser stops after a pause — restart automatically while still recording
+        if (!mounted || !_isRecording) return;
+        Future.delayed(const Duration(milliseconds: 150), () {
+          if (mounted && _isRecording) _startListening();
+        });
       },
     );
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) { t.cancel(); return; }
-      setState(() => _elapsed++);
-      final maxSec = _topics[_selectedTopic]['maxSeconds'] as int;
-      if (_elapsed >= maxSec) _stopRecording();
-    });
   }
 
   void _stopRecording() {
