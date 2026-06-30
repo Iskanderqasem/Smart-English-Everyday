@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/tts_service.dart';
+import '../../../../main.dart';
+import '../../../../shared/services/storage_service.dart';
 
 class ListeningPage extends StatefulWidget {
   const ListeningPage({super.key});
@@ -22,6 +24,8 @@ class _ListeningPageState extends State<ListeningPage> {
   Timer? _progressTimer;
   double _progress = 0.0;
   int _elapsed = 0;
+
+  Set<String> _completedLessons = {};
 
   final _accents = ['All', 'British', 'American', 'Australian', 'Canadian', 'New Zealand'];
 
@@ -102,10 +106,10 @@ class _ListeningPageState extends State<ListeningPage> {
       'accentCode': 'en-NZ',
       'level': 'B1',
       'topic': 'Culture',
-      'text': 'Kia ora and welcome! New Zealand is a small island nation in the South Pacific, known for its stunning landscapes and friendly people. The country has two main islands, the North Island and the South Island, with a total population of about five million people. Māori culture is an essential part of New Zealand identity. The haka, a traditional Māori dance, is performed at important ceremonies and by the famous All Blacks rugby team. New Zealand was the first country in the world to give women the right to vote, back in eighteen ninety three. The country is also famous for its outdoor lifestyle, including hiking, called tramping by locals, surfing, and bungee jumping, which was invented here.',
+      'text': 'Kia ora and welcome! New Zealand is a small island nation in the South Pacific, known for its stunning landscapes and friendly people. The country has two main islands, the North Island and the South Island, with a total population of about five million people. Maori culture is an essential part of New Zealand identity. The haka, a traditional Maori dance, is performed at important ceremonies and by the famous All Blacks rugby team. New Zealand was the first country in the world to give women the right to vote, back in eighteen ninety three. The country is also famous for its outdoor lifestyle, including hiking, called tramping by locals, surfing, and bungee jumping, which was invented here.',
       'questions': [
         {'q': 'What is the population of New Zealand?', 'opts': ['About 2 million', 'About 5 million', 'About 10 million', 'About 20 million'], 'a': 1},
-        {'q': 'What is a haka?', 'opts': ['A Māori food', 'A type of weather', 'A traditional Māori dance', 'A New Zealand sport'], 'a': 2},
+        {'q': 'What is a haka?', 'opts': ['A Maori food', 'A type of weather', 'A traditional Maori dance', 'A New Zealand sport'], 'a': 2},
         {'q': 'When did NZ give women the right to vote?', 'opts': ['1850', '1893', '1920', '1945'], 'a': 1},
         {'q': 'What do New Zealanders call hiking?', 'opts': ['Walking', 'Trekking', 'Tramping', 'Roaming'], 'a': 2},
       ],
@@ -115,6 +119,32 @@ class _ListeningPageState extends State<ListeningPage> {
   List<Map<String, dynamic>> get _filtered {
     if (_filterAccent == 'All') return _lessons;
     return _lessons.where((l) => l['accent'] == _filterAccent).toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCompletedLessons();
+  }
+
+  void _loadCompletedLessons() {
+    final raw = sl<StorageService>().getList('listening_done') ?? [];
+    setState(() {
+      _completedLessons = raw.cast<String>().toSet();
+    });
+  }
+
+  Future<void> _markLessonDone() async {
+    if (_active == null || _score <= 0) return;
+    final title = _active!['title'] as String;
+    if (_completedLessons.contains(title)) return;
+    setState(() {
+      _completedLessons.add(title);
+    });
+    final storage = sl<StorageService>();
+    await storage.saveList('listening_done', _completedLessons.toList());
+    final currentXp = storage.getInt('total_xp', defaultValue: 0);
+    await storage.saveInt('total_xp', currentXp + 20);
   }
 
   void _startLesson(Map<String, dynamic> lesson) {
@@ -178,6 +208,7 @@ class _ListeningPageState extends State<ListeningPage> {
       setState(() { _questionIndex++; _selectedAnswer = -1; _answered = false; });
     } else {
       setState(() => _done = true);
+      _markLessonDone();
     }
   }
 
@@ -191,6 +222,15 @@ class _ListeningPageState extends State<ListeningPage> {
   String _formatTime(int seconds) =>
       '${(seconds ~/ 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
 
+  String? _continueTitle() {
+    for (final lesson in _lessons) {
+      if (!_completedLessons.contains(lesson['title'] as String)) {
+        return lesson['title'] as String;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_active != null) return _buildPlayer();
@@ -199,6 +239,7 @@ class _ListeningPageState extends State<ListeningPage> {
 
   Widget _buildList() {
     final filtered = _filtered;
+    final continueTitle = _continueTitle();
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -247,7 +288,18 @@ class _ListeningPageState extends State<ListeningPage> {
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: filtered.length,
-            itemBuilder: (_, i) => _LessonCard(lesson: filtered[i], onTap: () => _startLesson(filtered[i])),
+            itemBuilder: (_, i) {
+              final lesson = filtered[i];
+              final title = lesson['title'] as String;
+              final isCompleted = _completedLessons.contains(title);
+              final isContinue = continueTitle == title;
+              return _LessonCard(
+                lesson: lesson,
+                onTap: () => _startLesson(lesson),
+                isCompleted: isCompleted,
+                isContinue: isContinue,
+              );
+            },
           ),
         ),
       ]),
@@ -467,6 +519,14 @@ class _ListeningPageState extends State<ListeningPage> {
           Text(lesson['title'] as String, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
           const SizedBox(height: 8),
           Text(msg, style: TextStyle(color: c, fontSize: 15, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+          if (_completedLessons.contains(lesson['title'] as String)) ...[
+            const SizedBox(height: 8),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              const Icon(Icons.check_circle, color: Colors.green, size: 18),
+              const SizedBox(width: 6),
+              const Text('Lesson completed! +20 XP earned', style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600)),
+            ]),
+          ],
           const SizedBox(height: 28),
           _resultRow('Accent', lesson['accent'] as String, Icons.record_voice_over),
           _resultRow('Level', lesson['level'] as String, Icons.bar_chart),
@@ -510,7 +570,15 @@ class _ListeningPageState extends State<ListeningPage> {
 class _LessonCard extends StatelessWidget {
   final Map<String, dynamic> lesson;
   final VoidCallback onTap;
-  const _LessonCard({required this.lesson, required this.onTap});
+  final bool isCompleted;
+  final bool isContinue;
+
+  const _LessonCard({
+    required this.lesson,
+    required this.onTap,
+    this.isCompleted = false,
+    this.isContinue = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -520,27 +588,66 @@ class _LessonCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)]),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: isContinue ? Border.all(color: AppColors.primary, width: 2) : null,
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)],
+        ),
         child: Row(children: [
           Container(
             width: 56, height: 56,
-            decoration: BoxDecoration(color: const Color(0xFF283593).withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
-            child: const Icon(Icons.headphones, color: Color(0xFF283593), size: 28),
+            decoration: BoxDecoration(
+              color: isCompleted
+                  ? Colors.green.withOpacity(0.1)
+                  : const Color(0xFF283593).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              isCompleted ? Icons.headphones : Icons.headphones,
+              color: isCompleted ? Colors.green : const Color(0xFF283593),
+              size: 28,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(lesson['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
+            Row(children: [
+              Expanded(
+                child: Text(
+                  lesson['title'] as String,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: isCompleted ? Colors.grey.shade600 : Colors.black87,
+                  ),
+                ),
+              ),
+            ]),
             const SizedBox(height: 4),
             Row(children: [
               _AccentBadge(lesson['accent'] as String),
               const SizedBox(width: 6),
-              Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
-                child: Text(lesson['level'] as String, style: const TextStyle(fontSize: 11, color: Colors.black54))),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
+                child: Text(lesson['level'] as String, style: const TextStyle(fontSize: 11, color: Colors.black54)),
+              ),
+              if (isContinue) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                  child: Text('Continue', style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.bold)),
+                ),
+              ],
             ]),
             const SizedBox(height: 4),
             Text('$qs comprehension questions', style: const TextStyle(fontSize: 12, color: AppColors.primary)),
           ])),
-          const Icon(Icons.play_circle_filled, color: AppColors.primary, size: 36),
+          if (isCompleted)
+            const Icon(Icons.check_circle, color: Colors.green, size: 28)
+          else
+            const Icon(Icons.play_circle_filled, color: AppColors.primary, size: 36),
         ]),
       ),
     );
