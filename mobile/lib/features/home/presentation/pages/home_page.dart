@@ -253,6 +253,7 @@ class _HomeTab extends StatelessWidget {
       {'icon': Icons.text_fields, 'label': 'Vocab', 'route': '/vocabulary', 'color': Colors.teal},
       {'icon': Icons.sports_esports, 'label': 'Games', 'route': '/games', 'color': Colors.pink},
       {'icon': Icons.smart_toy, 'label': 'AI Tutor', 'route': '/ai-teacher', 'color': AppColors.primary},
+      {'icon': Icons.school, 'label': 'Assessment', 'route': '/assessment', 'color': Colors.amber},
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,7 +261,7 @@ class _HomeTab extends StatelessWidget {
         const Text('Quick Access', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
         const SizedBox(height: 12),
         GridView.count(
-          crossAxisCount: 4,
+          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 5 : 4,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisSpacing: 12,
