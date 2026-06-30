@@ -6,6 +6,8 @@ import '../../../../core/constants/strings.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../main.dart';
+import '../../../../shared/services/storage_service.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../bloc/auth_bloc.dart';
@@ -24,6 +26,25 @@ class _LoginPageState extends State<LoginPage> {
   bool _rememberMe = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadSaved();
+  }
+
+  void _loadSaved() {
+    try {
+      final storage = sl<StorageService>();
+      final email = storage.getString('saved_email');
+      final pw = storage.getString('saved_password');
+      if (email != null && email.isNotEmpty) {
+        _emailController.text = email;
+        _passwordController.text = pw ?? '';
+        setState(() => _rememberMe = true);
+      }
+    } catch (_) {}
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -32,11 +53,21 @@ class _LoginPageState extends State<LoginPage> {
 
   void _onLogin() {
     if (_formKey.currentState?.validate() ?? false) {
+      try {
+        final storage = sl<StorageService>();
+        if (_rememberMe) {
+          storage.saveString('saved_email', _emailController.text.trim());
+          storage.saveString('saved_password', _passwordController.text);
+        } else {
+          storage.saveString('saved_email', '');
+          storage.saveString('saved_password', '');
+        }
+      } catch (_) {}
       context.read<AuthBloc>().add(
             AuthLoginRequested(
-              email: _emailController.text,
+              email: _emailController.text.trim(),
               password: _passwordController.text,
-              ),
+            ),
           );
     }
   }
