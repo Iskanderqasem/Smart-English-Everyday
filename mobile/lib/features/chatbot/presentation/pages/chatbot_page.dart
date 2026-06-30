@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' show Random;
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -236,12 +236,13 @@ class _ChatbotPageState extends State<ChatbotPage> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6)],
       ),
-      child: _TypingDots(),
+      child: const _TypingDots(),
     ),
   );
 }
 
 class _TypingDots extends StatefulWidget {
+  const _TypingDots();
   @override
   State<_TypingDots> createState() => _TypingDotsState();
 }
@@ -251,23 +252,30 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
   @override
   void initState() {
     super.initState();
-    _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat();
+    _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat();
   }
   @override
   void dispose() { _c.dispose(); super.dispose(); }
   @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: _c,
-    builder: (_, __) => Row(mainAxisSize: MainAxisSize.min, children: List.generate(3, (i) {
-      final t = (_c.value - i * 0.2).clamp(0.0, 1.0);
-      final s = 0.6 + 0.4 * sin(t * pi);
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 3),
-        width: 8, height: 8 * s,
-        decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(4)),
-      );
-    })),
-  );
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, __) {
+        return Row(mainAxisSize: MainAxisSize.min, children: List.generate(3, (i) {
+          final phase = (_c.value * 3 - i).clamp(0.0, 1.0);
+          final opacity = 0.3 + 0.7 * (phase < 0.5 ? phase * 2 : (1 - phase) * 2);
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            width: 8, height: 8,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade400.withOpacity(opacity),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          );
+        }));
+      },
+    );
+  }
 }
 
 // ─── Chatbot Engine ───────────────────────────────────────────────────────────
