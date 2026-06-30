@@ -1,0 +1,13 @@
+[build]
+  base    = "mobile"
+  command = "flutter/bin/flutter build web --web-renderer html --release --base-href /"
+  publish = "mobile/build/web"
+
+[build.environment]
+  FLUTTER_VERSION = "3.24.0"
+
+# SPA routing — redirect all paths to index.html so GoRouter hash URLs work
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200

@@ -19,6 +19,13 @@ class GamesPage extends StatelessWidget {
     {'title': 'Daily Challenge',    'desc': 'New challenge every day',    'icon': '⚡', 'color': Colors.deepOrange, 'route': null},
   ];
 
+  static int _columnCount(double width) {
+    if (width >= 1200) return 5;
+    if (width >= 900)  return 4;
+    if (width >= 600)  return 3;
+    return 2;
+  }
+
   void _onTap(BuildContext context, Object? route) {
     if (route is String) {
       context.push(route);
@@ -67,8 +74,8 @@ class GamesPage extends StatelessWidget {
                 },
                 childCount: _games.length,
               ),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: _columnCount(MediaQuery.of(context).size.width),
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 childAspectRatio: 1.05,
