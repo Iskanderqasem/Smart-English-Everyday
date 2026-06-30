@@ -6,36 +6,23 @@ import '../../../../shared/services/storage_service.dart';
 
 class WordSearchGame extends StatefulWidget {
   const WordSearchGame({super.key});
-
   @override
   State<WordSearchGame> createState() => _WordSearchGameState();
 }
 
 class _WordSearchGameState extends State<WordSearchGame> {
-  static const int _gridSize = 10;
-  static const double _cellSize = 36.0;
+  static const int _size = 10;
+  static const double _cellSize = 34.0;
 
-  final List<Map<String, dynamic>> _themes = [
-    {
-      'name': 'Emotions',
-      'words': ['HAPPY', 'BRAVE', 'CALM', 'PROUD', 'EAGER', 'JOYFUL'],
-    },
-    {
-      'name': 'English',
-      'words': ['SPEAK', 'WRITE', 'LEARN', 'STUDY', 'SPELL', 'FLUENT'],
-    },
-    {
-      'name': 'Nature',
-      'words': ['OCEAN', 'RIVER', 'CLOUD', 'EARTH', 'GRASS', 'STORM'],
-    },
-    {
-      'name': 'Animals',
-      'words': ['EAGLE', 'TIGER', 'WHALE', 'SNAKE', 'HORSE', 'SHEEP'],
-    },
-    {
-      'name': 'Travel',
-      'words': ['HOTEL', 'BEACH', 'TRAIN', 'PLANE', 'GUIDE', 'MONEY'],
-    },
+  final _gridKey = GlobalKey();
+  final _rng = Random();
+
+  static const _themes = [
+    {'name': 'Emotions',  'words': ['HAPPY', 'BRAVE', 'CALM', 'PROUD', 'EAGER', 'KIND']},
+    {'name': 'English',   'words': ['SPEAK', 'WRITE', 'LEARN', 'STUDY', 'SPELL', 'WORDS']},
+    {'name': 'Nature',    'words': ['OCEAN', 'RIVER', 'CLOUD', 'EARTH', 'GRASS', 'STORM']},
+    {'name': 'Animals',   'words': ['EAGLE', 'TIGER', 'WHALE', 'SNAKE', 'HORSE', 'SHEEP']},
+    {'name': 'Travel',    'words': ['HOTEL', 'BEACH', 'TRAIN', 'PLANE', 'GUIDE', 'MONEY']},
   ];
 
   late List<List<String>> _grid;
@@ -43,348 +30,261 @@ class _WordSearchGameState extends State<WordSearchGame> {
   late String _themeName;
   late Map<String, List<List<int>>> _wordCells;
   final Set<String> _found = {};
-
   List<List<int>> _selecting = [];
-  List<int>? _startCell;
-
-  final Random _rng = Random();
+  bool _showCelebration = false;
+  List<int>? _dragStart;
 
   @override
   void initState() {
     super.initState();
-    _startNewGame();
+    _newGame();
   }
 
-  void _startNewGame() {
+  void _newGame() {
     final theme = _themes[_rng.nextInt(_themes.length)];
     _themeName = theme['name'] as String;
     _words = List<String>.from(theme['words'] as List);
     _found.clear();
     _selecting = [];
-    _startCell = null;
+    _showCelebration = false;
     _wordCells = {};
-    _grid = _buildGrid();
+    _dragStart = null;
+    _grid = _makeGrid();
   }
 
-  List<List<String>> _buildGrid() {
-    final grid = List.generate(_gridSize, (_) => List.filled(_gridSize, ''));
-    const directions = [
-      [0, 1],
-      [1, 0],
-      [1, 1],
-      [1, -1],
-    ];
-
+  List<List<String>> _makeGrid() {
+    final g = List.generate(_size, (_) => List.filled(_size, ''));
+    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
     for (final word in _words) {
-      bool placed = false;
-      int attempts = 0;
-      while (!placed && attempts < 200) {
-        attempts++;
-        final dir = directions[_rng.nextInt(directions.length)];
-        final dr = dir[0];
-        final dc = dir[1];
-        final startR = _rng.nextInt(_gridSize);
-        final startC = _rng.nextInt(_gridSize);
-        final endR = startR + dr * (word.length - 1);
-        final endC = startC + dc * (word.length - 1);
-        if (endR < 0 || endR >= _gridSize || endC < 0 || endC >= _gridSize) {
-          continue;
+      for (var attempt = 0; attempt < 300; attempt++) {
+        final d = dirs[_rng.nextInt(dirs.length)];
+        final r0 = _rng.nextInt(_size);
+        final c0 = _rng.nextInt(_size);
+        final cells = <List<int>>[];
+        bool ok = true;
+        for (var i = 0; i < word.length; i++) {
+          final r = r0 + d[0] * i;
+          final c = c0 + d[1] * i;
+          if (r < 0 || r >= _size || c < 0 || c >= _size) { ok = false; break; }
+          if (g[r][c] != '' && g[r][c] != word[i]) { ok = false; break; }
+          cells.add([r, c]);
         }
-        bool canPlace = true;
-        for (int i = 0; i < word.length; i++) {
-          final r = startR + dr * i;
-          final c = startC + dc * i;
-          if (grid[r][c] != '' && grid[r][c] != word[i]) {
-            canPlace = false;
-            break;
-          }
-        }
-        if (canPlace) {
-          final cells = <List<int>>[];
-          for (int i = 0; i < word.length; i++) {
-            final r = startR + dr * i;
-            final c = startC + dc * i;
-            grid[r][c] = word[i];
-            cells.add([r, c]);
-          }
+        if (ok) {
+          for (var i = 0; i < word.length; i++) g[cells[i][0]][cells[i][1]] = word[i];
           _wordCells[word] = cells;
-          placed = true;
+          break;
         }
       }
     }
-
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    for (int r = 0; r < _gridSize; r++) {
-      for (int c = 0; c < _gridSize; c++) {
-        if (grid[r][c] == '') {
-          grid[r][c] = letters[_rng.nextInt(letters.length)];
-        }
+    const abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (var r = 0; r < _size; r++) {
+      for (var c = 0; c < _size; c++) {
+        if (g[r][c] == '') g[r][c] = abc[_rng.nextInt(26)];
       }
     }
-    return grid;
+    return g;
   }
 
-  bool _isCellFound(int r, int c) {
-    for (final word in _found) {
-      final cells = _wordCells[word];
-      if (cells != null) {
-        for (final cell in cells) {
-          if (cell[0] == r && cell[1] == c) return true;
-        }
-      }
-    }
-    return false;
+  List<int>? _globalToCell(Offset global) {
+    final box = _gridKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return null;
+    final local = box.globalToLocal(global);
+    final r = (local.dy / _cellSize).floor();
+    final c = (local.dx / _cellSize).floor();
+    if (r < 0 || r >= _size || c < 0 || c >= _size) return null;
+    return [r, c];
   }
 
-  bool _isCellSelecting(int r, int c) {
-    for (final cell in _selecting) {
-      if (cell[0] == r && cell[1] == c) return true;
-    }
-    return false;
-  }
-
-  List<List<int>> _cellsAlongDirection(int startR, int startC, int endR, int endC) {
-    final dr = endR - startR;
-    final dc = endC - startC;
-
-    int dirR = 0;
-    int dirC = 0;
-
-    if (dr == 0 && dc == 0) {
-      return [[startR, startC]];
-    }
-
+  List<List<int>> _line(List<int> start, List<int> end) {
+    final dr = end[0] - start[0];
+    final dc = end[1] - start[1];
+    if (dr == 0 && dc == 0) return [start];
     final absDr = dr.abs();
     final absDc = dc.abs();
-
+    int dirR, dirC;
     if (absDr == 0) {
-      dirR = 0;
-      dirC = dc > 0 ? 1 : -1;
+      dirR = 0; dirC = dc.sign;
     } else if (absDc == 0) {
-      dirR = dr > 0 ? 1 : -1;
-      dirC = 0;
-    } else if ((absDr - absDc).abs() <= (absDr > absDc ? absDr : absDc) * 0.5) {
-      dirR = dr > 0 ? 1 : -1;
-      dirC = dc > 0 ? 1 : -1;
+      dirR = dr.sign; dirC = 0;
+    } else if ((absDr - absDc).abs() * 2 <= (absDr > absDc ? absDr : absDc)) {
+      dirR = dr.sign; dirC = dc.sign;
     } else if (absDr > absDc) {
-      dirR = dr > 0 ? 1 : -1;
-      dirC = 0;
+      dirR = dr.sign; dirC = 0;
     } else {
-      dirR = 0;
-      dirC = dc > 0 ? 1 : -1;
+      dirR = 0; dirC = dc.sign;
     }
-
-    final steps = dirR != 0 && dirC != 0
+    final steps = (dirR != 0 && dirC != 0)
         ? (absDr > absDc ? absDr : absDc)
         : (dirR != 0 ? absDr : absDc);
-
-    final cells = <List<int>>[];
-    for (int i = 0; i <= steps; i++) {
-      final r = (startR + dirR * i).clamp(0, _gridSize - 1);
-      final c = (startC + dirC * i).clamp(0, _gridSize - 1);
-      cells.add([r, c]);
-    }
-    return cells;
-  }
-
-  void _onPanStart(DragStartDetails details) {
-    final row = (details.localPosition.dy / _cellSize).floor().clamp(0, _gridSize - 1);
-    final col = (details.localPosition.dx / _cellSize).floor().clamp(0, _gridSize - 1);
-    setState(() {
-      _startCell = [row, col];
-      _selecting = [[row, col]];
+    return List.generate(steps + 1, (i) {
+      final r = (start[0] + dirR * i).clamp(0, _size - 1);
+      final c = (start[1] + dirC * i).clamp(0, _size - 1);
+      return [r, c];
     });
   }
 
-  void _onPanUpdate(DragUpdateDetails details) {
-    if (_startCell == null) return;
-    final row = (details.localPosition.dy / _cellSize).floor().clamp(0, _gridSize - 1);
-    final col = (details.localPosition.dx / _cellSize).floor().clamp(0, _gridSize - 1);
-    setState(() {
-      _selecting = _cellsAlongDirection(_startCell![0], _startCell![1], row, col);
-    });
+  void _onPointerDown(PointerDownEvent e) {
+    final cell = _globalToCell(e.position);
+    if (cell == null) return;
+    setState(() { _dragStart = cell; _selecting = [cell]; });
   }
 
-  void _onPanEnd(DragEndDetails details) {
-    if (_selecting.isEmpty) return;
-    final selectedWord = _selecting.map((c) => _grid[c[0]][c[1]]).join();
-    final reversed = selectedWord.split('').reversed.join();
-    String? foundWord;
-    for (final word in _words) {
-      if (word == selectedWord || word == reversed) {
-        foundWord = word;
-        break;
+  void _onPointerMove(PointerMoveEvent e) {
+    if (_dragStart == null) return;
+    final cell = _globalToCell(e.position);
+    if (cell == null) return;
+    setState(() => _selecting = _line(_dragStart!, cell));
+  }
+
+  void _onPointerUp(PointerUpEvent e) {
+    if (_selecting.length >= 2) {
+      final forward = _selecting.map((c) => _grid[c[0]][c[1]]).join();
+      final backward = forward.split('').reversed.join();
+      for (final w in _words) {
+        if (!_found.contains(w) && (w == forward || w == backward)) {
+          setState(() => _found.add(w));
+          _awardXp(10);
+          if (_found.length == _words.length) {
+            _awardXp(20);
+            Future.delayed(const Duration(milliseconds: 300),
+                () { if (mounted) setState(() => _showCelebration = true); });
+          }
+          break;
+        }
       }
     }
-    if (foundWord != null && !_found.contains(foundWord)) {
-      setState(() {
-        _found.add(foundWord!);
-      });
-      _onWordFound(foundWord);
-    }
-    setState(() {
-      _selecting = [];
-      _startCell = null;
-    });
+    setState(() { _selecting = []; _dragStart = null; });
   }
 
-  Future<void> _onWordFound(String word) async {
-    final storage = sl<StorageService>();
-    final current = storage.getInt('total_xp', defaultValue: 0);
-    int bonus = 10;
-    if (_found.length == _words.length) {
-      bonus = 30;
-      await storage.saveInt('total_xp', current + bonus);
-      _showCelebration();
-    } else {
-      await storage.saveInt('total_xp', current + bonus);
-    }
+  Future<void> _awardXp(int amount) async {
+    final s = sl<StorageService>();
+    await s.saveInt('total_xp', s.getInt('total_xp', defaultValue: 0) + amount);
   }
 
-  void _showCelebration() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('\u{1F389} Excellent!'),
-        content: const Text('All words found! You earned 60 XP!'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              setState(() => _startNewGame());
-            },
-            child: const Text('Play Again'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pop(context);
-            },
-            child: const Text('Back'),
-          ),
-        ],
-      ),
-    );
-  }
+  bool _isFound(int r, int c) => _found.any(
+      (w) => _wordCells[w]?.any((cell) => cell[0] == r && cell[1] == c) ?? false);
+
+  bool _isSel(int r, int c) => _selecting.any((cell) => cell[0] == r && cell[1] == c);
 
   @override
   Widget build(BuildContext context) {
-    final xpEarned = _found.length * 10;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Word Search - $_themeName'),
+        title: Text('Word Search — $_themeName'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'New Game',
-            onPressed: () => setState(() => _startNewGame()),
-          ),
+          IconButton(icon: const Icon(Icons.refresh), tooltip: 'New Game',
+              onPressed: () => setState(_newGame)),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Text(
-                'XP Earned: $xpEarned',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      body: SafeArea(child: _showCelebration ? _buildWin() : _buildGame()),
+    );
+  }
+
+  Widget _buildGame() {
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        Text(
+          'Drag across letters to find the words',
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        ),
+        Text(
+          '${_found.length}/${_words.length} found  •  XP: ${_found.length * 10}',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Listener(
+            onPointerDown: _onPointerDown,
+            onPointerMove: _onPointerMove,
+            onPointerUp: _onPointerUp,
+            child: Container(
+              key: _gridKey,
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.primary, width: 2),
+                borderRadius: BorderRadius.circular(6),
               ),
-              const SizedBox(height: 10),
-              Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 380),
-                  child: GestureDetector(
-                    onPanStart: _onPanStart,
-                    onPanUpdate: _onPanUpdate,
-                    onPanEnd: _onPanEnd,
-                    child: Container(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(_size, (r) => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_size, (c) {
+                    final found = _isFound(r, c);
+                    final sel = _isSel(r, c);
+                    Color bg = r.isEven == c.isEven ? Colors.white : Colors.grey.shade50;
+                    Color fg = Colors.black87;
+                    if (found) { bg = Colors.green.shade400; fg = Colors.white; }
+                    else if (sel) { bg = Colors.blue.shade400; fg = Colors.white; }
+                    return Container(
+                      width: _cellSize, height: _cellSize,
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.primary, width: 2),
-                        borderRadius: BorderRadius.circular(8),
+                        color: bg,
+                        border: Border.all(color: Colors.grey.shade200, width: 0.3),
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(_gridSize, (r) {
-                          return Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: List.generate(_gridSize, (c) {
-                              final isFound = _isCellFound(r, c);
-                              final isSelecting = _isCellSelecting(r, c);
-                              Color bg = Colors.grey.shade100;
-                              Color fg = Colors.black87;
-                              if (isFound) {
-                                bg = Colors.green.shade300;
-                                fg = Colors.white;
-                              } else if (isSelecting) {
-                                bg = AppColors.primary.withOpacity(0.4);
-                                fg = Colors.white;
-                              }
-                              return Container(
-                                width: _cellSize,
-                                height: _cellSize,
-                                decoration: BoxDecoration(
-                                  color: bg,
-                                  border: Border.all(color: Colors.grey.shade300, width: 0.5),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  _grid[r][c],
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: fg,
-                                  ),
-                                ),
-                              );
-                            }),
-                          );
-                        }),
-                      ),
-                    ),
-                  ),
-                ),
+                      alignment: Alignment.center,
+                      child: Text(_grid[r][c],
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: fg)),
+                    );
+                  }),
+                )),
               ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
-                children: _words.map((word) {
-                  final done = _found.contains(word);
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: done ? Colors.green.shade100 : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: done ? Colors.green : Colors.grey.shade400,
-                      ),
-                    ),
-                    child: Text(
-                      word,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: done ? Colors.green.shade800 : Colors.grey.shade700,
-                        decoration: done ? TextDecoration.lineThrough : null,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '${_found.length} / ${_words.length} words found',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-              ),
-            ],
+            ),
           ),
         ),
-      ),
+        const SizedBox(height: 14),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Wrap(
+            spacing: 8, runSpacing: 8, alignment: WrapAlignment.center,
+            children: _words.map((w) {
+              final done = _found.contains(w);
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: done ? Colors.green.shade100 : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: done ? Colors.green : Colors.grey.shade400),
+                ),
+                child: Text(w, style: TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w600,
+                  color: done ? Colors.green.shade800 : Colors.black87,
+                  decoration: done ? TextDecoration.lineThrough : null,
+                )),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildWin() {
+    return Center(child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Text('🎉', style: TextStyle(fontSize: 64)),
+        const SizedBox(height: 16),
+        const Text('All words found!',
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Text('You earned ${_words.length * 10 + 20} XP!',
+            style: const TextStyle(fontSize: 18, color: Colors.green)),
+        const SizedBox(height: 32),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.refresh),
+          label: const Text('Play Again'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary, foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+          ),
+          onPressed: () => setState(_newGame),
+        ),
+        const SizedBox(height: 12),
+        TextButton(onPressed: () => Navigator.pop(context),
+            child: const Text('Back to Games')),
+      ]),
+    ));
   }
 }
