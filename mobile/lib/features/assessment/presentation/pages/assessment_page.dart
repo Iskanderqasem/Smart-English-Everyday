@@ -324,9 +324,11 @@ class _AssessmentPageState extends State<AssessmentPage> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final inQuiz = _questions.isNotEmpty && !_submitted;
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
+        bottom: !inQuiz,
         child: Column(children: [
           _buildHeader(),
           if (_questions.isEmpty && !_submitted)
@@ -339,9 +341,10 @@ class _AssessmentPageState extends State<AssessmentPage> with SingleTickerProvid
           else if (_submitted && _latestResult != null)
             Expanded(child: _buildResults(_latestResult!))
           else
-            Expanded(child: _buildQuestion()),
+            Expanded(child: _buildQuestionContent()),
         ]),
       ),
+      bottomNavigationBar: inQuiz ? SafeArea(child: _buildNavBar()) : null,
     );
   }
 
@@ -507,14 +510,12 @@ class _AssessmentPageState extends State<AssessmentPage> with SingleTickerProvid
 
   // ─── Question ─────────────────────────────────────────────────────────────
 
-  Widget _buildQuestion() {
+  Widget _buildQuestionContent() {
     final q = _questions[_current];
     final sectionColors = {'grammar': Colors.blue, 'vocabulary': Colors.purple, 'structure': Colors.teal};
     final color = sectionColors[q.section] ?? AppColors.primary;
 
-    return Column(children: [
-      Expanded(
-        child: SingleChildScrollView(
+    return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // Section badge
@@ -567,11 +568,11 @@ class _AssessmentPageState extends State<AssessmentPage> with SingleTickerProvid
               );
             }),
           ]),
-        ),
-      ),
+        );
+  }
 
-      // Navigation bar
-      Container(
+  Widget _buildNavBar() {
+    return Container(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -621,8 +622,7 @@ class _AssessmentPageState extends State<AssessmentPage> with SingleTickerProvid
             ),
           ]),
         ]),
-      ),
-    ]);
+      );
   }
 
   // ─── Results ──────────────────────────────────────────────────────────────
