@@ -324,23 +324,25 @@ class _AssessmentPageState extends State<AssessmentPage> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final inQuiz = _questions.isNotEmpty && !_submitted;
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
-        child: Column(children: [
-          _buildHeader(),
-          if (_questions.isEmpty && !_submitted)
-            Expanded(
-              child: TabBarView(controller: _tabCtrl, children: [
-                _buildWelcome(),
-                _buildHistoryTab(),
+        child: inQuiz
+            // Quiz: flat scroll — no nested Expanded, everything scrolls together
+            ? SingleChildScrollView(child: _buildQuestionContent())
+            : Column(children: [
+                _buildHeader(),
+                if (_questions.isEmpty && !_submitted)
+                  Expanded(
+                    child: TabBarView(controller: _tabCtrl, children: [
+                      _buildWelcome(),
+                      _buildHistoryTab(),
+                    ]),
+                  )
+                else if (_submitted && _latestResult != null)
+                  Expanded(child: _buildResults(_latestResult!)),
               ]),
-            )
-          else if (_submitted && _latestResult != null)
-            Expanded(child: _buildResults(_latestResult!))
-          else
-            Expanded(child: _buildQuestionContent()),
-        ]),
       ),
     );
   }
@@ -512,7 +514,9 @@ class _AssessmentPageState extends State<AssessmentPage> with SingleTickerProvid
     final sectionColors = {'grammar': Colors.blue, 'vocabulary': Colors.purple, 'structure': Colors.teal};
     final color = sectionColors[q.section] ?? AppColors.primary;
 
-    return SingleChildScrollView(
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _buildHeader(),
+          Padding(
           padding: const EdgeInsets.all(20),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // Section badge
@@ -599,7 +603,8 @@ class _AssessmentPageState extends State<AssessmentPage> with SingleTickerProvid
             ]),
             const SizedBox(height: 24),
           ]),
-        );
+        ),  // Padding
+        ]);  // outer Column
   }
 
   // ─── Results ──────────────────────────────────────────────────────────────
