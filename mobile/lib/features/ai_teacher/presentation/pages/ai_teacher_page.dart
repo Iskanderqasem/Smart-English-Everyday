@@ -228,9 +228,19 @@ class _AiTeacherPageState extends State<AiTeacherPage> {
     // Plan questions
     if (lc.contains('plan') && lc.contains('reading')) return 'Reading Improvement Plan — 4 weeks:\n\n📅 Week 1: Foundation\n• Read 1 short article daily (BBC Learning English)\n• Note 5 new words each day\n• Use the Reading section in this app (A2-B1 level)\n\n📅 Week 2: Speed\n• Increase to 2 articles per day\n• Time yourself — aim to improve pace\n• Practice skimming for main ideas\n\n📅 Week 3: Depth\n• Read 1 longer text weekly (500+ words)\n• Summarise each text in 3 sentences\n• Focus on text structure and argument\n\n📅 Week 4: Challenge\n• Read authentic English content (news, blogs)\n• Answer comprehension questions (use the app!)\n• Review all vocabulary from the month\n\n🎯 Goal: Read EVERY DAY — even 15 minutes makes a huge difference over 4 weeks! 📖';
 
-    // Fallback — more helpful than before
-    final topic = q.length > 60 ? '${q.substring(0, 57)}...' : q;
-    return 'Good question about: "$topic"\n\nHere are some tips I can help you with in this chat:\n\n📚 Grammar: tenses, articles, prepositions, modals, passive voice, conditionals\n🔤 Vocabulary: word differences, idioms, phrasal verbs, collocations\n🗣️ Speaking: fluency, pronunciation, accent tips\n✍️ Writing: structure, linking words, paragraph writing\n👂 Listening: strategies and resources\n✅ Corrections: paste any sentence and ask me to correct it\n\nTry asking something like:\n• "Explain the past perfect tense"\n• "What is the difference between make and do?"\n• "Please correct: She don\'t like coffee"\n• "Give me a plan to improve my speaking" 😊';
+    // Nonsense / gibberish detector
+    final words = q.trim().split(RegExp(r'\s+'));
+    final commonEnglish = {'the','a','an','is','are','was','were','i','you','he','she','it','we','they','my','your','his','her','how','what','why','when','where','which','who','do','does','did','can','will','would','could','should','have','has','had','this','that','these','those','be','to','of','and','or','but','not','in','on','at','for','with','about','from','get','go','use','like','want','need','know','think','make','give','take','come','see','say','tell','help','please','explain','correct','improve','learn','study','english','grammar','verb','tense','word','sentence','question','language','practice','tip','example'};
+    final lowerWords = words.map((w) => w.toLowerCase().replaceAll(RegExp(r'[^a-z]'), '')).toSet();
+    final recognisedCount = lowerWords.intersection(commonEnglish).length;
+    final isGibberish = recognisedCount == 0 && words.length <= 4;
+
+    if (isGibberish) {
+      return "I didn't quite understand that. Please write a question in English and I'll do my best to help!\n\nFor example:\n• \"Explain the present perfect tense\"\n• \"What is the difference between make and do?\"\n• \"Please correct: She don't like coffee\"\n• \"How can I improve my speaking?\" 😊";
+    }
+
+    // Unknown but genuine-looking question
+    return 'That\'s an interesting question! I\'m not sure I have a specific answer for that topic yet.\n\nHere\'s what I CAN help you with:\n\n📚 Grammar: tenses, articles, prepositions, modals, passive voice, conditionals\n🔤 Vocabulary: word differences, idioms, phrasal verbs, collocations\n🗣️ Speaking: fluency, pronunciation, accent tips\n✍️ Writing: structure, linking words, paragraph writing\n👂 Listening: strategies and resources\n✅ Corrections: paste any sentence and ask me to correct it\n\nTry one of the quick questions at the top, or rephrase your question and I\'ll try again! 😊';
   }
 
   void _scrollToBottom() {
