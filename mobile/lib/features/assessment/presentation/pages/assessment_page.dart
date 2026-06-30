@@ -572,31 +572,54 @@ class _AssessmentPageState extends State<AssessmentPage> with SingleTickerProvid
 
       // Navigation bar
       Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, -4))],
         ),
-        child: Row(children: [
-          if (_current > 0)
-            OutlinedButton.icon(
-              onPressed: _prev,
-              icon: const Icon(Icons.arrow_back_ios, size: 14),
-              label: const Text('Back'),
-              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          // Hint shown when no answer selected
+          if (_answers[_current] == null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Icon(Icons.touch_app, size: 15, color: Colors.orange.shade700),
+                const SizedBox(width: 6),
+                Text('Tap an answer above to continue',
+                    style: TextStyle(fontSize: 12, color: Colors.orange.shade700, fontWeight: FontWeight.w500)),
+              ]),
             ),
-          const Spacer(),
-          ElevatedButton(
-            onPressed: _answers[_current] != null && !_loading ? _next : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+          Row(children: [
+            if (_current > 0)
+              OutlinedButton.icon(
+                onPressed: _prev,
+                icon: const Icon(Icons.arrow_back_ios, size: 14),
+                label: const Text('Back'),
+                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
+              ),
+            const Spacer(),
+            ElevatedButton(
+              onPressed: _loading ? null : () {
+                if (_answers[_current] == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Please select an answer before continuing.'),
+                    duration: Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                  ));
+                  return;
+                }
+                _next();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _answers[_current] != null ? AppColors.primary : Colors.grey.shade400,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              ),
+              child: _loading
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : Text(_current < _questions.length - 1 ? 'Next →' : 'Submit'),
             ),
-            child: _loading
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                : Text(_current < _questions.length - 1 ? 'Next →' : 'Submit'),
-          ),
+          ]),
         ]),
       ),
     ]);

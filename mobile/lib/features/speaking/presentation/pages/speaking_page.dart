@@ -16,8 +16,10 @@ class _SpeakingPageState extends State<SpeakingPage>
   late AnimationController _waveController;
   Timer? _timer;
   int _elapsed = 0;
+  // _confirmedText: only isFinal=true segments, accumulated across restarts
+  // _liveTranscript: _confirmedText + current interim (shown live, not scored)
+  String _confirmedText = '';
   String _liveTranscript = '';
-  String _finalTranscript = '';
   Map<String, dynamic>? _scores;
   String? _errorMsg;
   bool _micGranted = false;
@@ -97,8 +99,8 @@ class _SpeakingPageState extends State<SpeakingPage>
 
     setState(() {
       _isRecording = true;
+      _confirmedText = '';
       _liveTranscript = '';
-      _finalTranscript = '';
       _elapsed = 0;
       _errorMsg = null;
       _micGranted = false;
@@ -121,8 +123,14 @@ class _SpeakingPageState extends State<SpeakingPage>
         if (!mounted) return;
         setState(() {
           _micGranted = true;
-          _liveTranscript = transcript;
-          if (isFinal) _finalTranscript = transcript;
+          if (isFinal) {
+            // Accumulate confirmed text — this is accurate on all devices
+            _confirmedText = (_confirmedText + ' ' + transcript).trim();
+            _liveTranscript = _confirmedText;
+          } else {
+            // Show interim live but don't include in final analysis
+            _liveTranscript = (_confirmedText + ' ' + transcript).trim();
+          }
         });
       },
       onError: (error) {
@@ -154,7 +162,8 @@ class _SpeakingPageState extends State<SpeakingPage>
   void _stopRecording() {
     _timer?.cancel();
     SpeechRecognitionService.stop();
-    final text = _liveTranscript.isNotEmpty ? _liveTranscript : _finalTranscript;
+    // Always use _confirmedText (isFinal only) — never garbage interim results
+    final text = _confirmedText.trim().isNotEmpty ? _confirmedText.trim() : _liveTranscript.trim();
     final prompt = _topics[_selectedTopic]['prompt'] as String;
     final result = SpeakingAnalyzer.analyze(text, _elapsed, prompt);
 
@@ -171,8 +180,8 @@ class _SpeakingPageState extends State<SpeakingPage>
     setState(() {
       _isRecording = false;
       _showResults = false;
+      _confirmedText = '';
       _liveTranscript = '';
-      _finalTranscript = '';
       _elapsed = 0;
       _scores = null;
       _errorMsg = null;
@@ -385,7 +394,7 @@ class _SpeakingPageState extends State<SpeakingPage>
   Widget _buildResults() {
     final s = _scores!;
     final overall = s['overall'] as int;
-    final transcript = _liveTranscript.isNotEmpty ? _liveTranscript : _finalTranscript;
+    final transcript = _confirmedText.trim().isNotEmpty ? _confirmedText.trim() : _liveTranscript.trim();
     final feedback = SpeakingAnalyzer.generateFeedback(s, transcript);
     final topic = _topics[_selectedTopic];
 

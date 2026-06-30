@@ -107,52 +107,65 @@
 
       // Speech-to-Text helper — wraps Web Speech API in plain JS so Dart
       // doesn't need to parse SpeechRecognitionResultList via dart:js.
+      //
+      // Android Chrome note: continuous=true produces garbled/repeated text on
+      // Android. We use continuous=false (one utterance per session) and let
+      // Dart restart the recogniser via the onEnd callback. Dart accumulates
+      // finalised segments across restarts so the full transcript builds up.
       (function() {
         var _rec = null;
         var _running = false;
-        var _finalText = '';   // accumulates confirmed final segments
 
         window._SEE_STT = {
           isAvailable: function() {
             return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
           },
 
+          // start() fires onResult(transcript, isFinal) for each result.
+          // isFinal=true  → confirmed, accurate text for this utterance
+          // isFinal=false → live interim (may be noisy on Android, Dart filters)
           start: function(lang, onResult, onError, onEnd) {
             try {
               var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
               if (!SR) { onError('not-supported'); return; }
-              if (_rec) { try { _rec.abort(); } catch(e) {} }
+              if (_rec) { try { _rec.abort(); } catch(ex) {} _rec = null; }
 
               _rec = new SR();
-              _rec.continuous = true;
+              // continuous=false: one utterance per session.
+              // Dart restarts via onEnd to get continuous behaviour without
+              // the word-repetition and garbage-text bugs on Android Chrome.
+              _rec.continuous = false;
               _rec.interimResults = true;
               _rec.lang = lang || 'en-US';
               _rec.maxAlternatives = 1;
               _running = true;
-              _finalText = '';
 
               _rec.onresult = function(e) {
                 try {
-                  // Start from e.resultIndex to avoid re-processing already-sent
-                  // finalized results — fixes word repetition on Android Chrome.
                   var interim = '';
+                  var finalSegment = '';
                   for (var i = e.resultIndex; i < e.results.length; i++) {
                     if (e.results[i].isFinal) {
-                      _finalText += e.results[i][0].transcript + ' ';
+                      finalSegment += e.results[i][0].transcript;
                     } else {
                       interim += e.results[i][0].transcript;
                     }
                   }
-                  var combined = (_finalText + interim).trim();
-                  if (combined) {
-                    var allFinal = e.results[e.results.length - 1].isFinal;
-                    onResult(combined, allFinal);
+                  // Send final result with isFinal=true so Dart accumulates it
+                  if (finalSegment.trim()) {
+                    onResult(finalSegment.trim(), true);
+                  } else if (interim.trim()) {
+                    // Send interim as isFinal=false — Dart shows it live but
+                    // does NOT use it for final analysis
+                    onResult(interim.trim(), false);
                   }
                 } catch(ex) {}
               };
 
               _rec.onerror = function(e) {
-                onError(e.error || 'unknown');
+                if (e.error !== 'no-speech' && e.error !== 'aborted') {
+                  onError(e.error || 'unknown');
+                }
               };
 
               _rec.onend = function() {
@@ -167,8 +180,7 @@
 
           stop: function() {
             _running = false;
-            _finalText = '';
-            try { if (_rec) _rec.stop(); } catch(e) {}
+            try { if (_rec) { _rec.abort(); _rec = null; } } catch(e) {}
           }
         };
       })();
