@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Test — Smart English Everyday</title>
+  <style>
+    body { font-family: sans-serif; background: #1565C0; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    .card { background: white; border-radius: 20px; padding: 32px 24px; max-width: 360px; width: 90%; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+    h2 { color: #1565C0; margin: 0 0 8px; }
+    p { color: #555; font-size: 14px; margin: 0 0 24px; }
+    button { background: #1565C0; color: white; border: none; border-radius: 50px; padding: 14px 28px; font-size: 16px; cursor: pointer; width: 100%; margin-bottom: 12px; }
+    button:active { background: #0d47a1; }
+    #status { margin-top: 16px; padding: 12px; border-radius: 10px; font-size: 14px; display: none; }
+    .ok  { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .err { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+    .info{ background: #e3f2fd; color: #1565C0; border: 1px solid #90caf9; }
+    #voices-list { font-size: 11px; color: #777; margin-top: 8px; text-align: left; word-break: break-all; }
+    a { color: #1565C0; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h2>Audio Test</h2>
+  <p>Use this page to check if your browser can play speech audio. This is independent of the main app.</p>
+
+  <button onclick="runTest()">▶ Tap to test speech audio</button>
+  <button onclick="testMic()" style="background:#4caf50">🎤 Tap to test microphone</button>
+
+  <div id="status"></div>
+  <div id="voices-list"></div>
+
+  <p style="margin-top:20px">
+    <a href="/Smart-English-Everyday/#/home">← Back to app</a>
+  </p>
+</div>
+
+<script>
+var statusEl = document.getElementById('status');
+var voicesEl = document.getElementById('voices-list');
+
+function showStatus(msg, type) {
+  statusEl.className = type;
+  statusEl.textContent = msg;
+  statusEl.style.display = 'block';
+}
+
+function runTest() {
+  showStatus('Checking browser support...', 'info');
+
+  if (!window.speechSynthesis) {
+    showStatus('FAIL: Your browser does not support speechSynthesis. Please use Chrome or Edge.', 'err');
+    return;
+  }
+
+  var voices = speechSynthesis.getVoices();
+  voicesEl.textContent = 'Voices loaded: ' + voices.length + (voices.length ? ' (e.g. ' + voices[0].name + ')' : ' — loading...');
+
+  speechSynthesis.cancel();
+
+  var u = new SpeechSynthesisUtterance('Hello! Audio is working correctly in your browser.');
+  u.lang = 'en-US';
+  u.rate = 0.9;
+  u.pitch = 1.0;
+
+  u.onstart = function() { showStatus('Playing audio now...', 'info'); };
+  u.onend   = function() { showStatus('SUCCESS — Audio works! The app features should work too.', 'ok'); };
+  u.onerror = function(e) { showStatus('ERROR: ' + e.error + '. Try turning your volume up or restarting Chrome.', 'err'); };
+
+  try {
+    speechSynthesis.speak(u);
+    // Chrome Android sometimes gets stuck — resume after 100ms
+    setTimeout(function() { if (speechSynthesis.paused) speechSynthesis.resume(); }, 100);
+    showStatus('Audio queued — you should hear it in a moment.', 'info');
+  } catch(e) {
+    showStatus('EXCEPTION: ' + e.message, 'err');
+  }
+}
+
+function testMic() {
+  showStatus('Requesting microphone access...', 'info');
+  if (!navigator.mediaDevices) {
+    showStatus('FAIL: Microphone API not available. Make sure you are on HTTPS and using Chrome/Edge.', 'err');
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(function(stream) {
+      showStatus('SUCCESS — Microphone works! Stream active, stopping now.', 'ok');
+      stream.getTracks().forEach(function(t) { t.stop(); });
+    })
+    .catch(function(e) {
+      showStatus('DENIED/ERROR: ' + e.name + ' — ' + e.message, 'err');
+    });
+}
+
+// Pre-load voices
+if (window.speechSynthesis) {
+  speechSynthesis.getVoices();
+  speechSynthesis.addEventListener('voiceschanged', function() {
+    var v = speechSynthesis.getVoices();
+    voicesEl.textContent = 'Voices available: ' + v.length;
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/Smart-English-Everyday/">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Smart English Everyday — AI-powered English Learning Platform">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Smart English Everyday">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Prevent browser caching stale versions -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Icons -->
+  <link rel="icon" type="image/png" href="icons/Icon-192.png"/>
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Theme color -->
+  <meta name="theme-color" content="#1565C0">
+
+  <title>Smart English Everyday</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: linear-gradient(135deg, #1565C0, #7B1FA2); height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; }
+    #loading { text-align: center; color: white; }
+    #loading-logo { font-size: 64px; margin-bottom: 16px; animation: pulse 1.5s ease-in-out infinite; }
+    #loading-title { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+    #loading-sub { font-size: 14px; opacity: 0.8; margin-bottom: 32px; }
+    #loading-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; overflow: hidden; margin: 0 auto; }
+    #loading-bar-fill { height: 100%; background: white; border-radius: 2px; animation: loading 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+    @keyframes loading { 0%{width:0;margin-left:0} 50%{width:100%;margin-left:0} 100%{width:0;margin-left:100%} }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div id="loading-logo">&#127758;</div>
+    <div id="loading-title">Smart English Everyday</div>
+    <div id="loading-sub">Smart English Learning</div>
+    <div id="loading-bar"><div id="loading-bar-fill"></div></div>
+  </div>
+
+  <!-- ============================================================
+       TTS helper — defined here so it always runs in the page
+       context and is available the moment Flutter calls it.
+       Works on Chrome, Firefox, Safari, Edge, Android, iOS.
+       ============================================================ -->
+  <script>
+    (function() {
+      var _onEndCb = null;
+
+      // Unregister any old service workers that may be caching stale files
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(r) { r.unregister(); });
+        });
+      }
+
+      window._SEE_TTS = {
+        speak: function(text, lang, rate) {
+          try {
+            var synth = window.speechSynthesis;
+            if (!synth) return;
+            synth.cancel();
+            _onEndCb = null;
+
+            var u = new SpeechSynthesisUtterance(text);
+            u.lang   = lang  || 'en-US';
+            u.rate   = parseFloat(rate) || 0.85;
+            u.pitch  = 1.0;
+
+            u.onend   = function() { if (_onEndCb) { _onEndCb(); _onEndCb = null; } };
+            u.onerror = function() { if (_onEndCb) { _onEndCb(); _onEndCb = null; } };
+
+            synth.speak(u);
+
+            // Chrome Android sometimes pauses synthesis in background tabs
+            if (synth.paused) synth.resume();
+
+            // Safety: if onend never fires (some mobile browsers), call back after
+            // estimated time so the UI doesn't get stuck
+            var wordCount = text.split(' ').length;
+            var estimatedMs = Math.max(3000, (wordCount / (parseFloat(rate) || 0.85)) * 700);
+            setTimeout(function() {
+              if (_onEndCb) { _onEndCb(); _onEndCb = null; }
+            }, estimatedMs);
+          } catch(e) {}
+        },
+
+        setOnEnd: function(cb) { _onEndCb = cb; },
+
+        stop: function() {
+          try { window.speechSynthesis.cancel(); _onEndCb = null; } catch(e) {}
+        },
+
+        isSpeaking: function() {
+          try { return window.speechSynthesis.speaking; } catch(e) { return false; }
+        }
+      };
+
+      // Speech-to-Text helper — wraps Web Speech API in plain JS so Dart
+      // doesn't need to parse SpeechRecognitionResultList via dart:js.
+      //
+      // Android Chrome note: continuous=true produces garbled/repeated text on
+      // Android. We use continuous=false (one utterance per session) and let
+      // Dart restart the recogniser via the onEnd callback. Dart accumulates
+      // finalised segments across restarts so the full transcript builds up.
+      (function() {
+        var _rec = null;
+        var _running = false;
+
+        window._SEE_STT = {
+          isAvailable: function() {
+            return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+          },
+
+          // start() fires onResult(transcript, isFinal) for each result.
+          // isFinal=true  → confirmed, accurate text for this utterance
+          // isFinal=false → live interim (may be noisy on Android, Dart filters)
+          start: function(lang, onResult, onError, onEnd) {
+            try {
+              var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+              if (!SR) { onError('not-supported'); return; }
+              if (_rec) { try { _rec.abort(); } catch(ex) {} _rec = null; }
+
+              _rec = new SR();
+              // continuous=false: one utterance per session.
+              // Dart restarts via onEnd to get continuous behaviour without
+              // the word-repetition and garbage-text bugs on Android Chrome.
+              _rec.continuous = false;
+              _rec.interimResults = true;
+              _rec.lang = lang || 'en-US';
+              _rec.maxAlternatives = 1;
+              _running = true;
+
+              _rec.onresult = function(e) {
+                try {
+                  var interim = '';
+                  var finalSegment = '';
+                  for (var i = e.resultIndex; i < e.results.length; i++) {
+                    if (e.results[i].isFinal) {
+                      finalSegment += e.results[i][0].transcript;
+                    } else {
+                      interim += e.results[i][0].transcript;
+                    }
+                  }
+                  // Send final result with isFinal=true so Dart accumulates it
+                  if (finalSegment.trim()) {
+                    onResult(finalSegment.trim(), true);
+                  } else if (interim.trim()) {
+                    // Send interim as isFinal=false — Dart shows it live but
+                    // does NOT use it for final analysis
+                    onResult(interim.trim(), false);
+                  }
+                } catch(ex) {}
+              };
+
+              _rec.onerror = function(e) {
+                if (e.error !== 'no-speech' && e.error !== 'aborted') {
+                  onError(e.error || 'unknown');
+                }
+              };
+
+              _rec.onend = function() {
+                if (_running) onEnd();
+              };
+
+              _rec.start();
+            } catch(e) {
+              onError(e.message || 'start-failed');
+            }
+          },
+
+          stop: function() {
+            _running = false;
+            try { if (_rec) { _rec.abort(); _rec = null; } } catch(e) {}
+          }
+        };
+      })();
+
+    })();
+  </script>
+
+  <!-- Version stamp + audio test button -->
+  <div id="_ver_bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:#1b5e20;color:#fff;font-size:12px;text-align:center;padding:4px;font-family:sans-serif">
+    v29-Jun-2025 &nbsp;|&nbsp;
+    <span onclick="window._SEE_TTS.speak('Audio test. Speech is working correctly.','en-US',0.9)"
+      style="cursor:pointer;text-decoration:underline">Tap here to test audio</span>
+  </div>
+  <script>
+    setTimeout(function() {
+      var bar = document.getElementById('_ver_bar');
+      if (bar) bar.style.display = 'block';
+      // Auto-hide after 12s so it doesn't clutter the UI
+      setTimeout(function() { if (bar) bar.style.display = 'none'; }, 12000);
+    }, 3000);
+  </script>
+
+  <script src="flutter.js" defer></script>
+  <script>
+    window.addEventListener('load', function(ev) {
+      _flutter.loader.loadEntrypoint({
+        onEntrypointLoaded: async function(engineInitializer) {
+          let appRunner = await engineInitializer.initializeEngine();
+          document.getElementById('loading').style.display = 'none';
+          await appRunner.runApp();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
