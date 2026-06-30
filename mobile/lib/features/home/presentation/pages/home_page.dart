@@ -64,14 +64,54 @@ class _HomePageState extends State<HomePage> {
 
 // ─── HOME TAB ───────────────────────────────────────────────────────────────
 
-class _HomeTab extends StatelessWidget {
+class _HomeTab extends StatefulWidget {
   const _HomeTab();
+  @override
+  State<_HomeTab> createState() => _HomeTabState();
+}
 
+class _HomeTabState extends State<_HomeTab> {
   String _greeting() {
     final h = DateTime.now().hour;
     if (h < 12) return 'Good morning!';
     if (h < 17) return 'Good afternoon!';
     return 'Good evening!';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showWelcomeBack());
+  }
+
+  void _showWelcomeBack() {
+    try {
+      final storage = sl<StorageService>();
+      final lastActivity = storage.getString('last_activity_label');
+      final lastRoute = storage.getString('last_activity_route');
+      if (lastActivity == null || lastActivity.isEmpty) return;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Row(children: [
+          const Text('👋 ', style: TextStyle(fontSize: 18)),
+          Expanded(child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Welcome back!', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              Text('Continue: $lastActivity', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            ],
+          )),
+        ]),
+        action: lastRoute != null && lastRoute.isNotEmpty
+          ? SnackBarAction(label: 'Go →', textColor: Colors.amber, onPressed: () => context.push(lastRoute))
+          : null,
+        duration: const Duration(seconds: 5),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: const Color(0xFF3F51B5),
+      ));
+    } catch (_) {}
   }
 
   @override
@@ -270,7 +310,14 @@ class _HomeTab extends StatelessWidget {
             icon: item['icon'] as IconData,
             label: item['label'] as String,
             color: item['color'] as Color,
-            onTap: () => context.push(item['route'] as String),
+            onTap: () {
+              try {
+                final storage = sl<StorageService>();
+                storage.saveString('last_activity_label', item['label'] as String);
+                storage.saveString('last_activity_route', item['route'] as String);
+              } catch (_) {}
+              context.push(item['route'] as String);
+            },
           )).toList(),
         ),
       ],
