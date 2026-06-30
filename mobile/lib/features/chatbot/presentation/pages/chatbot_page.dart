@@ -135,7 +135,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   Align(
                     alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
                     child: Container(
-                      margin: const EdgeInsets.only(bottom: correction != null ? 4 : 12),
+                      margin: EdgeInsets.only(bottom: correction != null ? 4.0 : 12.0),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
                       decoration: BoxDecoration(
@@ -776,7 +776,7 @@ class ChatbotEngine {
       keywords.any((k) => lower.contains(k));
 
   static bool _isGreeting(String lower) =>
-      RegExp(r'^(hi|hello|hey|good morning|good evening|good afternoon|howdy|greetings|what\'s up|sup)').hasMatch(lower);
+      RegExp(r"^(hi|hello|hey|good morning|good evening|good afternoon|howdy|greetings|what's up|sup)").hasMatch(lower);
 
   static bool _isGoodbye(String lower) =>
       _matches(lower, ['goodbye', 'bye', 'see you', 'take care', 'good night', 'cya', 'farewell']);
